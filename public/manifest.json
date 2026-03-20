@@ -1,0 +1,29 @@
+{
+  "name": "Brookie – Cookies & Brownies Artesanais",
+  "short_name": "Brookie",
+  "description": "Cookies e brownies artesanais feitos com amor, entregues com cuidado.",
+  "theme_color": "#1a0a00",
+  "background_color": "#fffbf5",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "/",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["food", "shopping"],
+  "icons": [
+    { "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Cardápio",
+      "url": "/catalogo",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Meu Carrinho",
+      "url": "/carrinho",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
