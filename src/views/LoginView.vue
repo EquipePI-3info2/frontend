@@ -1,6 +1,7 @@
+<!-- Troque "NOME DA PÁGINA" pelo nome correto em cada arquivo -->
 <template>
   <div class="stub-view">
-    <h1>Produto</h1>
+    <h1>Login</h1>
     <p>Página em construção.</p>
     <RouterLink to="/">← Voltar ao início</RouterLink>
   </div>
