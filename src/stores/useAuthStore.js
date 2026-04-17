@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { authService } from '@/services/authService.js'
+import authService from '@/services/authService'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user         = ref(null)
-  const token        = ref(null)
-  const refreshToken = ref(null)
-  const loading      = ref(false)
+  const user            = ref(null)
+  const token           = ref(localStorage.getItem('access_token') || null)
+  const loading         = ref(false)
 
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin         = computed(() => user.value?.is_staff === true)
@@ -14,10 +13,11 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email, password) {
     loading.value = true
     try {
-      const data = await authService.login({ email, password })
-      token.value        = data.access
-      refreshToken.value = data.refresh
-      user.value         = data.user ?? null
+      const { data } = await authService.login(email, password)
+      token.value = data.access
+      localStorage.setItem('access_token',  data.access)
+      localStorage.setItem('refresh_token', data.refresh)
+      await fetchProfile()
     } finally {
       loading.value = false
     }
@@ -26,37 +26,29 @@ export const useAuthStore = defineStore('auth', () => {
   async function register(userData) {
     loading.value = true
     try {
-      const data = await authService.register(userData)
-      token.value        = data.access
-      refreshToken.value = data.refresh
-      user.value         = data.user ?? null
+      await authService.register(userData)
     } finally {
       loading.value = false
     }
   }
 
   async function fetchProfile() {
-    if (!token.value) return
     try {
-      user.value = await authService.getProfile()
-    } catch {
-      logout()
-    }
-  }
-
-  async function doRefreshToken() {
-    if (!refreshToken.value) throw new Error('No refresh token')
-    const data  = await authService.refreshToken(refreshToken.value)
-    token.value = data.access
+      const { data } = await authService.getProfile()
+      user.value = data
+    } catch { /* silencioso */ }
   }
 
   function logout() {
-    user.value = null; token.value = null; refreshToken.value = null
+    user.value  = null
+    token.value = null
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
   }
 
   return {
-    user, token, refreshToken, loading,
+    user, token, loading,
     isAuthenticated, isAdmin,
-    login, register, fetchProfile, doRefreshToken, logout,
+    login, register, fetchProfile, logout,
   }
 })

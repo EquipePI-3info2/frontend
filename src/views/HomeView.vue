@@ -1,128 +1,112 @@
 <template>
-  <div class="home-view">
+  <div class="home">
     <AppHeader @toggle-menu="menuOpen = !menuOpen" />
 
-    <main class="home-view__main pb-nav" id="main-content">
+    <!-- Overlay do menu lateral -->
+    <Transition name="fade">
+      <div v-if="menuOpen" class="menu-overlay" @click="menuOpen = false" />
+    </Transition>
+
+    <!-- Menu lateral -->
+    <Transition name="slide">
+      <aside v-if="menuOpen" class="side-menu" role="dialog" aria-modal="true" aria-label="Menu">
+        <div class="side-menu__header">
+          <img :src="logoUrl" alt="Brookiê" class="side-menu__logo" />
+          <button class="side-menu__close" aria-label="Fechar menu" @click="menuOpen = false">
+            <X :size="24" />
+          </button>
+        </div>
+        <nav class="side-menu__nav">
+          <RouterLink to="/"         @click="menuOpen = false">Início</RouterLink>
+          <RouterLink to="/busca"    @click="menuOpen = false">Buscar produtos</RouterLink>
+          <RouterLink to="/carrinho" @click="menuOpen = false">Meu carrinho</RouterLink>
+          <RouterLink to="/perfil"   @click="menuOpen = false">Meu perfil</RouterLink>
+          <RouterLink to="/login"    @click="menuOpen = false">Entrar / Cadastrar</RouterLink>
+        </nav>
+      </aside>
+    </Transition>
+
+    <!-- Conteúdo principal -->
+    <main class="pb-nav">
       <HeroBanner />
       <CategoryFilter />
       <ProductGrid />
     </main>
 
     <BottomNav />
-
-    <Transition name="slide-menu">
-      <aside
-        v-if="menuOpen"
-        class="home-view__sidebar"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu de navegação"
-      >
-        <div class="home-view__sidebar-header">
-          <img :src="logoUrl" alt="Brookiê" class="home-view__sidebar-logo" />
-          <button class="home-view__sidebar-close" aria-label="Fechar menu" @click="menuOpen = false">
-            <XIcon :size="22" />
-          </button>
-        </div>
-        <nav class="home-view__sidebar-nav" aria-label="Menu lateral">
-          <RouterLink to="/"         @click="menuOpen = false">Início</RouterLink>
-          <RouterLink to="/busca"    @click="menuOpen = false">Buscar produtos</RouterLink>
-          <RouterLink to="/carrinho" @click="menuOpen = false">Carrinho</RouterLink>
-          <RouterLink to="/perfil"   @click="menuOpen = false">Meu Perfil</RouterLink>
-          <RouterLink to="/login"    @click="menuOpen = false">Entrar</RouterLink>
-        </nav>
-      </aside>
-    </Transition>
-
-    <Transition name="fade-overlay">
-      <div v-if="menuOpen" class="home-view__overlay" aria-hidden="true" @click="menuOpen = false" />
-    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
-import { XIcon } from 'lucide-vue-next'
+import { X } from 'lucide-vue-next'
 
-import AppHeader      from '@/components/layout/AppHeader.vue'
-import BottomNav      from '@/components/layout/BottomNav.vue'
-import HeroBanner     from '@/components/home/HeroBanner.vue'
+import AppHeader     from '@/components/layout/AppHeader.vue'
+import BottomNav     from '@/components/layout/BottomNav.vue'
+import HeroBanner    from '@/components/home/HeroBanner.vue'
 import CategoryFilter from '@/components/home/CategoryFilter.vue'
-import ProductGrid    from '@/components/home/ProductGrid.vue'
-
-import { useProductStore } from '@/stores/useProductStore.js'
+import ProductGrid   from '@/components/home/ProductGrid.vue'
+import { useProductStore } from '@/stores/useProductStore'
 import logoUrl from '@/assets/images/logo.png'
 
-const store    = useProductStore()
-const menuOpen = ref(false)
+const menuOpen   = ref(false)
+const store      = useProductStore()
 
+// Fecha o menu com ESC
+function onKeydown(e) { if (e.key === 'Escape') menuOpen.value = false }
 onMounted(async () => {
-  await Promise.all([
-    store.fetchCategories(),
-    store.fetchProducts(store.activeCategory),
-  ])
+  window.addEventListener('keydown', onKeydown)
+  // Carrega categorias primeiro, depois produtos da categoria ativa
+  await store.fetchCategories()
+  await store.fetchProducts()
 })
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <style scoped>
-.home-view { position: relative; min-height: 100dvh; }
-.home-view__main { padding-top: var(--space-2); }
-
-.home-view__sidebar {
-  position: fixed;
-  inset: 0 0 0 auto;
-  width: min(280px, 80vw);
-  background-color: var(--color-surface);
-  z-index: 300;
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-6) var(--space-5);
-  box-shadow: var(--shadow-lg);
-  overflow-y: auto;
+/* Overlay */
+.menu-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.4);
 }
-.home-view__sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-8);
+/* Menu lateral */
+.side-menu {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  z-index: 400;
+  width: 280px; background: var(--color-bg);
+  padding: var(--space-6);
+  display: flex; flex-direction: column; gap: var(--space-6);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
 }
-.home-view__sidebar-logo { height: 36px; width: auto; object-fit: contain; }
-.home-view__sidebar-close {
+.side-menu__header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.side-menu__logo { height: 32px; width: auto; }
+.side-menu__close {
   display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px;
-  border-radius: var(--radius-lg);
-  color: var(--color-primary);
-  background: transparent; border: none; cursor: pointer;
-}
-.home-view__sidebar-close:hover { background-color: rgba(59, 26, 8, 0.07); }
-.home-view__sidebar-nav { display: flex; flex-direction: column; gap: var(--space-1); }
-.home-view__sidebar-nav a {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-base);
-  font-weight: 600;
+  width: 44px; height: 44px; border-radius: var(--radius-md);
   color: var(--color-text);
-  text-decoration: none;
-  transition: background-color var(--transition-fast);
+  transition: background var(--transition);
 }
-.home-view__sidebar-nav a:hover,
-.home-view__sidebar-nav a.router-link-active { background-color: var(--color-hero-card); color: var(--color-primary); }
-
-.home-view__overlay {
-  position: fixed; inset: 0;
-  background-color: rgba(59, 26, 8, 0.35);
-  backdrop-filter: blur(2px);
-  z-index: 250;
+.side-menu__close:active { background: rgba(59,26,8,0.08); }
+.side-menu__nav {
+  display: flex; flex-direction: column; gap: var(--space-1);
 }
+.side-menu__nav a {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 700; font-size: 1rem;
+  color: var(--color-text);
+  transition: background var(--transition);
+}
+.side-menu__nav a:hover,
+.side-menu__nav a.router-link-active { background: var(--color-hero-card); }
 
-.slide-menu-enter-active,
-.slide-menu-leave-active { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-menu-enter-from,
-.slide-menu-leave-to { transform: translateX(100%); }
+/* Transições */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.fade-overlay-enter-active,
-.fade-overlay-leave-active { transition: opacity 0.25s ease; }
-.fade-overlay-enter-from,
-.fade-overlay-leave-to { opacity: 0; }
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); }
+.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
 </style>

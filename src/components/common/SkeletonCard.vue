@@ -1,33 +1,35 @@
 <template>
-  <article class="skeleton-card" aria-hidden="true">
-    <div class="skeleton-card__image skeleton" />
-    <div class="skeleton-card__body">
-      <div class="skeleton-card__name skeleton" />
-      <div class="skeleton-card__price skeleton" />
-      <div class="skeleton-card__btn skeleton" />
+  <div class="skeleton-card" aria-hidden="true">
+    <div class="skeleton skeleton-image" />
+    <div class="skeleton-body">
+      <div class="skeleton skeleton-title" />
+      <div class="skeleton skeleton-price" />
+      <div class="skeleton skeleton-btn" />
     </div>
-  </article>
+  </div>
 </template>
 
 <style scoped>
 .skeleton-card {
   background: var(--color-surface);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
-.skeleton-card__image {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 0;
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0d9d0 25%,
+    #faeae4 50%,
+    #f0d9d0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
 }
-.skeleton-card__body {
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.skeleton-card__name  { height: 1rem;   width: 75%; border-radius: var(--radius-sm); }
-.skeleton-card__price { height: 0.875rem; width: 45%; border-radius: var(--radius-sm); }
-.skeleton-card__btn   { height: 36px;   width: 100%; border-radius: var(--radius-full); margin-top: var(--space-2); }
+.skeleton-image { height: 148px; border-radius: 0; }
+.skeleton-body  { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.skeleton-title { height: 14px; width: 75%; }
+.skeleton-price { height: 14px; width: 45%; }
+.skeleton-btn   { height: 36px; border-radius: var(--radius-full); margin-top: 0.25rem; }
 </style>

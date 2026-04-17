@@ -1,128 +1,102 @@
 <template>
-  <section class="category-filter" aria-label="Filtrar por categoria">
-    <div class="container">
-      <h2 class="category-filter__title">Nossas deliciosas categorias</h2>
+  <section class="categories container">
+    <h2 class="categories__title">Nossas deliciosas categorias</h2>
 
-      <div class="category-filter__pills">
-        <button
-          v-for="cat in categories"
-          :key="cat.slug"
-          class="category-filter__pill"
-          :class="{ 'category-filter__pill--active': activeCategory === cat.slug }"
-          :aria-pressed="activeCategory === cat.slug"
-          @click="select(cat.slug)"
-        >
-          <span class="category-filter__thumb">
-            <img
-              :src="cat.slug === 'cookies' ? cookieUrl : brownieUrl"
-              :alt="cat.name"
-              width="36"
-              height="36"
-              loading="lazy"
-            />
-          </span>
-          <span class="category-filter__pill-label">{{ cat.name }}</span>
-        </button>
-      </div>
+    <div v-if="loadingCats" class="categories__pills">
+      <div v-for="n in 2" :key="n" class="skeleton category-skeleton" />
+    </div>
+
+    <div v-else class="categories__pills">
+      <button
+        v-for="cat in categories"
+        :key="cat.slug"
+        class="category-pill"
+        :class="{ 'category-pill--active': activeCategory === cat.slug }"
+        @click="setActiveCategory(cat.slug)"
+      >
+        <img
+          :src="getCategoryImage(cat.slug)"
+          :alt="cat.name"
+          class="category-pill__img"
+          width="36"
+          height="36"
+          loading="lazy"
+        />
+        <span class="category-pill__label">{{ cat.name }}</span>
+      </button>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useProductStore } from '@/stores/useProductStore.js'
+import { useProductStore } from '@/stores/useProductStore'
+import { storeToRefs } from 'pinia'
 import cookieUrl  from '@/assets/images/cookie.png'
 import brownieUrl from '@/assets/images/brownie.png'
 
-const store          = useProductStore()
-const categories     = computed(() => store.categories)
-const activeCategory = computed(() => store.activeCategory)
+const store = useProductStore()
+const { categories, activeCategory, loadingCats } = storeToRefs(store)
+const { setActiveCategory } = store
 
-function select(slug) {
-  if (slug === activeCategory.value) return
-  store.setActiveCategory(slug)
-  store.fetchProducts(slug)
+function getCategoryImage(slug) {
+  if (slug === 'brownies') return brownieUrl
+  return cookieUrl
 }
 </script>
 
 <style scoped>
-.category-filter {
-  padding-bottom: var(--space-5);
-}
+.categories { padding-block: var(--space-6) var(--space-4); }
 
-.category-filter__title {
-  font-size: var(--text-lg);
+.categories__title {
+  font-size: 1rem;
   font-weight: 800;
   color: var(--color-text);
   text-align: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
-/* Pills wrapper — 2 colunas de tamanho igual */
-.category-filter__pills {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.categories__pills {
+  display: flex;
   gap: var(--space-3);
 }
 
-/* Pill: forma retangular arredondada (NOT pill-shape) */
-.category-filter__pill {
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #f0d9d0 25%, #faeae4 50%, #f0d9d0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-lg);
+}
+.category-skeleton { height: 60px; flex: 1; }
+
+/* Pill */
+.category-pill {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background-color: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-lg); /* 16px — retangular arredondado */
-  font-family: var(--font-family);
-  font-size: var(--text-base);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 2px solid transparent;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-text);
   cursor: pointer;
-  min-height: 56px;
-  width: 100%;
-  transition:
-    background-color var(--transition-fast),
-    border-color     var(--transition-fast),
-    box-shadow       var(--transition-fast),
-    transform        var(--transition-fast);
 }
+.category-pill:active { transform: scale(0.97); }
 
-.category-filter__pill:hover {
+.category-pill--active {
+  background: var(--color-hero-card);
   border-color: var(--color-accent);
-  box-shadow: var(--shadow-sm);
 }
 
-.category-filter__pill:active {
-  transform: scale(0.97);
-}
-
-/* Estado ativo: fundo pêssego, borda salmon */
-.category-filter__pill--active {
-  background-color: var(--color-hero-card);
-  border-color: var(--color-accent);
-  color: var(--color-primary);
-}
-
-/* Thumbnail quadrada arredondada */
-.category-filter__thumb {
+.category-pill__img {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  flex-shrink: 0;
-  background: var(--color-bg);
-}
-
-.category-filter__thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.category-filter__pill-label {
-  font-size: var(--text-base);
-  font-weight: 700;
-  line-height: 1;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
 }
 </style>
