@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ── Variáveis ──────────────────────────────────────────────────────────────── */
+:root {
+  --color-bg: #FDE8E0;
+  --color-surface: #FFFFFF;
+  --color-primary: #3B1A08;
+  --color-primary-light: #6B3A1F;
+  --color-accent: #F4A98A;
+  --color-hero-card: #F6CDB4;
+  --color-text: #3B1A08;
+  --color-text-muted: #8A6A5E;
+  --color-text-inverse: #FFFFFF;
+  --color-border: rgba(59, 26, 8, 0.10);
+  --color-shadow: rgba(59, 26, 8, 0.08);
+
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-full: 9999px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --shadow-sm: 0 2px 8px var(--color-shadow);
+  --shadow-md: 0 4px 16px var(--color-shadow);
+
+  --font-base: 'Nunito', sans-serif;
+  --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --nav-height: 4rem;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: none;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-base);
+  font-size: 1rem;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  min-height: 100dvh;
+  line-height: 1.5;
+}
+
+img, picture, video { display: block; max-width: 100%; height: auto; }
+ul { list-style: none; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+
+/* ── Utilitários ────────────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* compensa a bottom nav */
+.pb-nav {
+  padding-bottom: calc(var(--nav-height) + var(--space-4));
+}
+
+/* ── Animações ──────────────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
