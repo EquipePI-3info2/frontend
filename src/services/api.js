@@ -6,14 +6,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Injeta o token JWT em toda requisição autenticada
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Trata 401: tenta refresh, senão desloga
 let isRefreshing = false
 let failedQueue = []
 

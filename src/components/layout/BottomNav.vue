@@ -28,14 +28,14 @@ import { RouterLink } from 'vue-router'
 import { Home, Search, ShoppingCart, User } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/useCartStore'
 
-const cartStore  = useCartStore()
+const cartStore = useCartStore()
 const totalItems = computed(() => cartStore.totalItems)
 
 const navItems = computed(() => [
-  { to: '/',        label: 'Início',    icon: Home },
-  { to: '/busca',   label: 'Buscar',    icon: Search },
+  { to: '/', label: 'Início', icon: Home },
+  { to: '/busca', label: 'Buscar', icon: Search },
   { to: '/carrinho', label: 'Carrinho', icon: ShoppingCart, badge: totalItems.value },
-  { to: '/perfil',  label: 'Perfil',    icon: User },
+  { to: '/perfil', label: 'Perfil', icon: User },
 ])
 </script>
 
@@ -61,7 +61,7 @@ const navItems = computed(() => [
   justify-content: center;
   flex: 1;
   height: 100%;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
   transition: color var(--transition);
   position: relative;
 }

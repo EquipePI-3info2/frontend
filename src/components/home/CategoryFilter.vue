@@ -31,7 +31,7 @@
 <script setup>
 import { useProductStore } from '@/stores/useProductStore'
 import { storeToRefs } from 'pinia'
-import cookieUrl  from '@/assets/images/cookie.png'
+import cookieUrl from '@/assets/images/cookie.png'
 import brownieUrl from '@/assets/images/brownie.png'
 
 const store = useProductStore()
@@ -45,7 +45,9 @@ function getCategoryImage(slug) {
 </script>
 
 <style scoped>
-.categories { padding-block: var(--space-6) var(--space-4); }
+.categories {
+  padding-block: var(--space-6) var(--space-4);
+}
 
 .categories__title {
   font-size: 1rem;
@@ -60,16 +62,17 @@ function getCategoryImage(slug) {
   gap: var(--space-3);
 }
 
-/* Skeleton */
 .skeleton {
   background: linear-gradient(90deg, #f0d9d0 25%, #faeae4 50%, #f0d9d0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
   border-radius: var(--radius-lg);
 }
-.category-skeleton { height: 60px; flex: 1; }
+.category-skeleton {
+  height: 60px;
+  flex: 1;
+}
 
-/* Pill */
 .category-pill {
   flex: 1;
   display: flex;
@@ -80,13 +83,18 @@ function getCategoryImage(slug) {
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   border: 2px solid transparent;
-  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform var(--transition);
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-text);
   cursor: pointer;
 }
-.category-pill:active { transform: scale(0.97); }
+.category-pill:active {
+  transform: scale(0.97);
+}
 
 .category-pill--active {
   background: var(--color-hero-card);

@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { data } = await authService.getProfile()
       user.value = data
-    } catch { /* silencioso */ }
+    } catch {}
   }
 
   function logout() {

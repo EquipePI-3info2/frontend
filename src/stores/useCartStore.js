@@ -2,24 +2,19 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
-  // ── State ──────────────────────────────────────────────────────────────────
-  const items   = ref([])   // [{ product, quantity, subtotal }]
+  const items = ref([]) // [{ product, quantity, subtotal }]
   const loading = ref(false)
 
-  // ── Getters ────────────────────────────────────────────────────────────────
-  const totalItems = computed(() =>
-    items.value.reduce((sum, i) => sum + i.quantity, 0),
-  )
+  const totalItems = computed(() => items.value.reduce((sum, i) => sum + i.quantity, 0))
 
   const totalPrice = computed(() =>
     items.value.reduce((sum, i) => sum + parseFloat(i.product.price) * i.quantity, 0),
   )
 
-  const isInCart = computed(() => (productId) =>
-    items.value.some((i) => i.product.id === productId),
+  const isInCart = computed(
+    () => (productId) => items.value.some((i) => i.product.id === productId),
   )
 
-  // ── Actions ────────────────────────────────────────────────────────────────
   function addToCart(product, quantity = 1) {
     const existing = items.value.find((i) => i.product.id === product.id)
     if (existing) {
@@ -41,19 +36,32 @@ export const useCartStore = defineStore('cart', () => {
   function updateQuantity(productId, qty) {
     const item = items.value.find((i) => i.product.id === productId)
     if (!item) return
-    if (qty <= 0) { removeFromCart(productId); return }
+    if (qty <= 0) {
+      removeFromCart(productId)
+      return
+    }
     item.quantity = qty
     item.subtotal = qty * parseFloat(item.product.price)
   }
 
-  function clearCart() { items.value = [] }
+  function clearCart() {
+    items.value = []
+  }
 
-  // Preparado para sincronizar com backend futuramente
-  async function fetchCart() { /* TODO: GET /api/cart/ */ }
+  async function fetchCart() {
+    /* GET /api/cart/ */
+  }
 
   return {
-    items, loading,
-    totalItems, totalPrice, isInCart,
-    addToCart, removeFromCart, updateQuantity, clearCart, fetchCart,
+    items,
+    loading,
+    totalItems,
+    totalPrice,
+    isInCart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    fetchCart,
   }
 })
