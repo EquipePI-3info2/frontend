@@ -13,9 +13,9 @@ const authService = {
   getProfile() {
     return api.get('/usuarios/me/')
   },
-  logout() {
-    return api.post('/auth/logout/')
-  },
+  // NOTA: o backend não possui endpoint de logout.
+  // O logout é feito apenas no frontend (limpeza de tokens no localStorage).
+  // O método abaixo foi removido intencionalmente.
 }
 
 export default authService
