@@ -11,28 +11,40 @@
         Entrar
       </h1>
 
-      <form class="login__form">
+      <!-- Mensagem de erro vinda do store -->
+      <p v-if="authStore.error" class="login__error">
+        {{ authStore.error }}
+      </p>
+
+      <form class="login__form" @submit.prevent="handleSubmit">
         <div class="login__field">
           <input
+            v-model="email"
             type="email"
             placeholder="Email"
             class="login__input"
+            autocomplete="email"
+            required
           />
         </div>
 
         <div class="login__field">
           <input
+            v-model="password"
             type="password"
             placeholder="Senha"
             class="login__input"
+            autocomplete="current-password"
+            required
           />
         </div>
 
         <button
           type="submit"
           class="login__button"
+          :disabled="authStore.loading"
         >
-          Entrar
+          {{ authStore.loading ? 'Entrando…' : 'Entrar' }}
         </button>
       </form>
 
@@ -47,8 +59,26 @@
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter, RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/useAuthStore'
 import logoUrl from '@/assets/images/logo.png'
+
+const authStore = useAuthStore()
+const router    = useRouter()
+
+const email    = ref('')
+const password = ref('')
+
+async function handleSubmit() {
+  try {
+    await authStore.login(email.value, password.value)
+    // Login bem-sucedido → redireciona para o perfil (ou home)
+    router.push({ name: 'profile' })
+  } catch {
+    // O erro já está em authStore.error — nada a fazer aqui
+  }
+}
 </script>
 
 <style scoped>
@@ -85,6 +115,18 @@ import logoUrl from '@/assets/images/logo.png'
   align-self: flex-start;
 
   margin-bottom: 32px;
+}
+
+.login__error {
+  width: 100%;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .login__form {
@@ -142,8 +184,13 @@ import logoUrl from '@/assets/images/logo.png'
   transition: .2s;
 }
 
-.login__button:hover {
+.login__button:hover:not(:disabled) {
   background: #512613;
+}
+
+.login__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .login__register {
