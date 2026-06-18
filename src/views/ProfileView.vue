@@ -9,7 +9,12 @@
 
       <template v-else-if="authStore.user">
         <div class="profile__avatar">
-          {{ initials }}
+          <img v-if="authStore.user?.profile_photo_url" :src="authStore.user.profile_photo_url" alt="Foto de perfil"
+            class="profile__avatar-image">
+
+          <span v-else>
+            {{ initials }}
+          </span>
         </div>
 
         <h1 class="profile__name">{{ authStore.user.name }}</h1>
@@ -47,7 +52,7 @@ import { useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
 
 const authStore = useAuthStore()
-const router    = useRouter()
+const router = useRouter()
 
 // Iniciais do nome para o avatar
 const initials = computed(() => {
@@ -111,6 +116,12 @@ function handleLogout() {
   justify-content: center;
   margin-bottom: 20px;
 }
+.profile__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 
 .profile__name {
   font-size: 1.5rem;
@@ -141,7 +152,7 @@ function handleLogout() {
   background: white;
   border-radius: 16px;
   padding: 16px 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
   margin-bottom: 32px;
 }
 
