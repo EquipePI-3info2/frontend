@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import authService from '@/services/authService'
+import profileService from '@/services/profileService'
 
 export const useAuthStore = defineStore('auth', () => {
   const user    = ref(null)
@@ -57,6 +58,45 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // ── Atualizar nome/telefone ────────────────────────────────────────────────
+  async function updateProfile(payload) {
+    error.value = null
+    try {
+      const updatedUser = await profileService.updateProfile(payload)
+      user.value = updatedUser
+      return updatedUser
+    } catch (err) {
+      error.value = 'Erro ao atualizar perfil. Tente novamente.'
+      throw err
+    }
+  }
+
+  // ── Upload de foto de perfil ────────────────────────────────────────────────
+  async function uploadPhoto(file) {
+    error.value = null
+    try {
+      const updatedUser = await profileService.uploadPhoto(file)
+      user.value = updatedUser
+      return updatedUser
+    } catch (err) {
+      error.value = 'Erro ao enviar a foto. Tente novamente.'
+      throw err
+    }
+  }
+
+  // ── Remover foto de perfil ──────────────────────────────────────────────────
+  async function removePhoto() {
+    error.value = null
+    try {
+      const updatedUser = await profileService.removePhoto()
+      user.value = updatedUser
+      return updatedUser
+    } catch (err) {
+      error.value = 'Erro ao remover a foto. Tente novamente.'
+      throw err
+    }
+  }
+
   // ── Inicialização (chamado no App.vue ao montar) ──────────────────────────
   // Garante que, após um F5, o user é recarregado se o token ainda for válido.
   async function init() {
@@ -76,6 +116,6 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user, token, loading, error,
     isAuthenticated, isAdmin,
-    login, register, fetchProfile, init, logout,
+    login, register, fetchProfile, updateProfile, uploadPhoto, removePhoto, init, logout,
   }
 })

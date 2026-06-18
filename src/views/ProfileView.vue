@@ -30,6 +30,9 @@
             <span class="profile__info-value">{{ memberSince }}</span>
           </div>
         </div>
+        <div>
+          <button @click="router.push({ name: 'EditProfile' })">Editar perfil</button>
+        </div>
 
         <button class="profile__logout" @click="handleLogout">
           Sair da conta
