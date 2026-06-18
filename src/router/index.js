@@ -33,6 +33,12 @@ const routes = [
     meta: { title: 'Entrar — Brookiê' },
   },
   {
+    path: '/cadastro',
+    name: 'register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { title: 'Cadastre-se — Brookiê' },
+  },
+  {
     path: '/perfil',
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),
