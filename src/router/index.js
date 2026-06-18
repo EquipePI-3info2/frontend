@@ -45,6 +45,12 @@ const routes = [
     meta: { title: 'Meu perfil — Brookiê', requiresAuth: true },
   },
   {
+  path: '/perfil/editar',
+  name: 'EditProfile',
+  component: () => import('@/views/EditprofileView.vue'),
+  meta: { requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),
