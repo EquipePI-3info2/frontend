@@ -2,7 +2,7 @@ import axios from 'axios'
 import router from '@/router'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://backend-qj8o.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://backend-znt0.onrender.com',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -50,7 +50,7 @@ api.interceptors.response.use(
         if (!refresh) throw new Error('Sem refresh token')
 
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'https://backend-qj8o.onrender.com/api'}/token/refresh/`,
+          `${import.meta.env.VITE_API_URL || 'https://backend-znt0.onrender.com'}/token/refresh/`,
           { refresh },
         )
 
