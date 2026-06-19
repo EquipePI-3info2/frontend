@@ -33,10 +33,22 @@ const routes = [
     meta: { title: 'Entrar — Brookiê' },
   },
   {
+    path: '/cadastro',
+    name: 'register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { title: 'Cadastre-se — Brookiê' },
+  },
+  {
     path: '/perfil',
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),
     meta: { title: 'Meu perfil — Brookiê', requiresAuth: true },
+  },
+  {
+  path: '/perfil/editar',
+  name: 'EditProfile',
+  component: () => import('@/views/EditprofileView.vue'),
+  meta: { requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',

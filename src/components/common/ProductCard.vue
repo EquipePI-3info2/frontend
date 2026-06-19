@@ -42,19 +42,23 @@ import AppButton from './AppButton.vue'
 
 const props = defineProps({
   product: { type: Object, required: true },
-  index:   { type: Number, default: 0 },
+  index: { type: Number, default: 0 },
 })
 
-const router    = useRouter()
+const router = useRouter()
 const cartStore = useCartStore()
-const added     = ref(false)
+const added = ref(false)
 const imgFailed = ref(false)
 
 const imageSrc = computed(() =>
-  imgFailed.value ? resolveProductImage(props.product) : (props.product.image_url || resolveProductImage(props.product)),
+  imgFailed.value
+    ? resolveProductImage(props.product)
+    : props.product.image_url || resolveProductImage(props.product),
 )
 
-function onImageError() { imgFailed.value = true }
+function onImageError() {
+  imgFailed.value = true
+}
 
 function formatPrice(value) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -78,11 +82,16 @@ function goToProduct() {
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
   display: flex;
   flex-direction: column;
 }
-.product-card:active { transform: scale(0.98); box-shadow: var(--shadow-md); }
+.product-card:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-md);
+}
 
 .product-card__image-wrap {
   background: #fdf3ee;
@@ -98,7 +107,9 @@ function goToProduct() {
   object-fit: cover;
   transition: transform 0.35s ease;
 }
-.product-card:hover .product-card__image { transform: scale(1.04); }
+.product-card:hover .product-card__image {
+  transform: scale(1.04);
+}
 
 .product-card__body {
   padding: 0.75rem;

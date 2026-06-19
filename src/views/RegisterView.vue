@@ -1,21 +1,31 @@
 <template>
   <main class="page">
 
-    <!-- ── Topo: área clara com logo ── -->
+    <!-- ── Topo: seta voltar + título ── -->
     <div class="page__top">
-      <img :src="logoUrl" alt="Brookiê" class="page__logo" />
+      <button class="page__back" @click="router.go(-1)" aria-label="Voltar">←</button>
+      <h1 class="page__title">Cadastre-se</h1>
     </div>
 
     <!-- ── Card escuro ── -->
     <section class="page__card">
 
-      <h1 class="card__title">Login</h1>
-
-      <p v-if="authStore.error" class="card__error">
-        {{ authStore.error }}
+      <p v-if="localError || authStore.error" class="card__error">
+        {{ localError || authStore.error }}
       </p>
 
       <form class="card__form" @submit.prevent="handleSubmit">
+
+        <div class="card__field">
+          <span class="field__label">Nome</span>
+          <input
+            v-model="name"
+            type="text"
+            class="field__input"
+            autocomplete="name"
+            required
+          />
+        </div>
 
         <div class="card__field">
           <span class="field__label">Email</span>
@@ -34,7 +44,18 @@
             v-model="password"
             type="password"
             class="field__input"
-            autocomplete="current-password"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="card__field">
+          <span class="field__label">Confirme a senha</span>
+          <input
+            v-model="passwordConfirm"
+            type="password"
+            class="field__input"
+            autocomplete="new-password"
             required
           />
         </div>
@@ -44,13 +65,13 @@
           class="card__btn"
           :disabled="authStore.loading"
         >
-          {{ authStore.loading ? 'Entrando…' : 'Login' }}
+          {{ authStore.loading ? 'Criando conta…' : 'Cadastre-se' }}
         </button>
 
       </form>
 
-      <RouterLink to="/cadastro" class="card__link">
-        Não tem uma conta? <strong>Cadastre-se!</strong>
+      <RouterLink to="/" class="card__link">
+        Já tem uma conta? <strong>Entre!</strong>
       </RouterLink>
 
     </section>
@@ -61,19 +82,28 @@
 import { ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
-import logoUrl from '@/assets/images/logo.png'
 
-const authStore = useAuthStore()
-const router    = useRouter()
+const authStore       = useAuthStore()
+const router          = useRouter()
 
-const email    = ref('')
-const password = ref('')
+const name            = ref('')
+const email           = ref('')
+const password        = ref('')
+const passwordConfirm = ref('')
+const localError      = ref('')
 
 async function handleSubmit() {
+  localError.value = ''
+
+  if (password.value !== passwordConfirm.value) {
+    localError.value = 'As senhas não coincidem.'
+    return
+  }
+
   try {
-    await authStore.login(email.value, password.value)
-    // Login bem-sucedido → redireciona para o perfil (ou home)
-    router.push({ name: 'profile' })
+    await authStore.register(name.value, email.value, password.value)
+    // Cadastro bem-sucedido → redireciona para o login
+    router.push('/')
   } catch {
     // O erro já está em authStore.error — nada a fazer aqui
   }
@@ -89,22 +119,39 @@ async function handleSubmit() {
   flex-direction: column;
 }
 
-/* ─── Topo (logo) ──────────────────────────────────── */
+/* ─── Topo (seta + título) ─────────────────────────── */
 .page__top {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 64px 32px 40px;
+  padding: 56px 28px 28px;
 }
 
-.page__logo {
-  width: 172px;
+.page__back {
+  position: absolute;
+  left: 28px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #3B1A08;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.page__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3B1A08;
 }
 
 /* ─── Card escuro ──────────────────────────────────── */
 .page__card {
   flex: 1;
-  background: #390F09;
+  background: #3B1A08;
   border-top-left-radius: 36px;
   border-top-right-radius: 36px;
   padding: 44px 28px 52px;
@@ -113,15 +160,7 @@ async function handleSubmit() {
   align-items: center;
 }
 
-/* ─── Título ───────────────────────────────────────── */
-.card__title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #FDE8E0;
-  margin-bottom: 36px;
-}
-
-/* ─── Erro do store ────────────────────────────────── */
+/* ─── Erros (store + validação local) ─────────────── */
 .card__error {
   width: 100%;
   background: rgba(255, 80, 80, 0.15);
@@ -179,7 +218,7 @@ async function handleSubmit() {
   border: none;
   border-radius: 999px;
   background: #F4A49C;
-  color: #390F09;
+  color: #3B1A08;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -195,7 +234,7 @@ async function handleSubmit() {
   cursor: not-allowed;
 }
 
-/* ─── Link de cadastro ─────────────────────────────── */
+/* ─── Link para login ──────────────────────────────── */
 .card__link {
   margin-top: auto;
   padding-top: 36px;
