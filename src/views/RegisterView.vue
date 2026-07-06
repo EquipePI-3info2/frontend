@@ -101,11 +101,15 @@ async function handleSubmit() {
   }
 
   try {
-    await authStore.register(name.value, email.value, password.value)
-    // Cadastro bem-sucedido → redireciona para o login
+    // ✅ Passa um objeto com os campos que o backend espera
+    await authStore.register({
+      name:     name.value,
+      email:    email.value,
+      password: password.value,
+    })
     router.push('/')
   } catch {
-    // O erro já está em authStore.error — nada a fazer aqui
+    // O erro já está em authStore.error
   }
 }
 </script>
