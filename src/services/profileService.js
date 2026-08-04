@@ -34,9 +34,7 @@ const profileService = {
   async uploadPhoto(file) {
     const formData = new FormData()
     formData.append('profile_photo', file)
-    const { data } = await api.patch('/usuarios/me/foto/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const { data } = await api.patch('/usuarios/me/foto/', formData)
     return data
   },
 
