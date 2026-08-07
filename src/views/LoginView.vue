@@ -1,211 +1,50 @@
 <template>
   <main class="page">
-
-    <!-- ── Topo: área clara com logo ── -->
-    <div class="page__top">
-      <img :src="logoUrl" alt="Brookiê" class="page__logo" />
-    </div>
-
-    <!-- ── Card escuro ── -->
+    <div class="page__top"><img :src="logoUrl" alt="Brookiê" class="page__logo" /></div>
     <section class="page__card">
-
       <h1 class="card__title">Login</h1>
-
-      <p v-if="authStore.error" class="card__error">
-        {{ authStore.error }}
-      </p>
-
+      <p v-if="route.query.registered" class="card__success">Conta criada com sucesso. Agora faça seu login.</p>
+      <p v-if="authStore.error" class="card__error">{{ authStore.error }}</p>
       <form class="card__form" @submit.prevent="handleSubmit">
-
-        <div class="card__field">
-          <span class="field__label">Email</span>
-          <input
-            v-model="email"
-            type="email"
-            class="field__input"
-            autocomplete="email"
-            required
-          />
-        </div>
-
-        <div class="card__field">
-          <span class="field__label">Senha</span>
-          <input
-            v-model="password"
-            type="password"
-            class="field__input"
-            autocomplete="current-password"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          class="card__btn"
-          :disabled="authStore.loading"
-        >
-          {{ authStore.loading ? 'Entrando…' : 'Login' }}
-        </button>
-
+        <label class="card__field"><span class="field__label">E-mail</span><input v-model.trim="email" type="email" class="field__input" autocomplete="email" required /></label>
+        <label class="card__field"><span class="field__label">Senha</span><input v-model="password" type="password" class="field__input" autocomplete="current-password" required /></label>
+        <button type="submit" class="card__btn" :disabled="authStore.loading">{{ authStore.loading ? 'Entrando…' : 'Entrar' }}</button>
       </form>
-
-      <RouterLink to="/cadastro" class="card__link">
-        Não tem uma conta? <strong>Cadastre-se!</strong>
-      </RouterLink>
-
+      <RouterLink :to="{ name: 'register', query: route.query.redirect ? { redirect: route.query.redirect } : {} }" class="card__link">Não tem uma conta? <strong>Cadastre-se!</strong></RouterLink>
+      <RouterLink to="/" class="card__home">Voltar para a loja</RouterLink>
     </section>
   </main>
 </template>
-
 <script setup>
-import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
 import logoUrl from '@/assets/images/logo.png'
-
-const authStore = useAuthStore()
-const router    = useRouter()
-
-const email    = ref('')
-const password = ref('')
-
+const authStore = useAuthStore(); const route = useRoute(); const router = useRouter(); const email = ref(''); const password = ref('')
+onMounted(() => authStore.clearError())
 async function handleSubmit() {
   try {
     await authStore.login(email.value, password.value)
-    // Login bem-sucedido → redireciona para o perfil (ou home)
-    router.push({ name: 'profile' })
-  } catch {
-    // O erro já está em authStore.error — nada a fazer aqui
-  }
+    const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '/perfil'
+    router.replace(redirect)
+  } catch { /* store exibe erro */ }
 }
 </script>
-
 <style scoped>
-/* ─── Página ───────────────────────────────────────── */
-.page {
-  min-height: 100vh;
-  background: #FDE8E0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ─── Topo (logo) ──────────────────────────────────── */
-.page__top {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 64px 32px 40px;
-}
-
-.page__logo {
-  width: 172px;
-}
-
-/* ─── Card escuro ──────────────────────────────────── */
-.page__card {
-  flex: 1;
-  background: #390F09;
-  border-top-left-radius: 36px;
-  border-top-right-radius: 36px;
-  padding: 44px 28px 52px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* ─── Título ───────────────────────────────────────── */
-.card__title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #FDE8E0;
-  margin-bottom: 36px;
-}
-
-/* ─── Erro do store ────────────────────────────────── */
-.card__error {
-  width: 100%;
-  background: rgba(255, 80, 80, 0.15);
-  color: #FFB3B3;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-/* ─── Formulário ───────────────────────────────────── */
-.card__form {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* ─── Campo com label empilhada ────────────────────── */
-.card__field {
-  width: 100%;
-  background: #FBF5F0;
-  border-radius: 18px;
-  padding: 13px 22px 15px;
-  cursor: text;
-}
-
-.field__label {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #3B1A08;
-  margin-bottom: 3px;
-  letter-spacing: 0.01em;
-}
-
-.field__input {
-  display: block;
-  width: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 1rem;
-  color: #3B1A08;
-  padding: 0;
-}
-
-/* ─── Botão ────────────────────────────────────────── */
-.card__btn {
-  width: 100%;
-  height: 56px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 999px;
-  background: #F4A49C;
-  color: #390F09;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
-}
-
-.card__btn:hover:not(:disabled) {
-  background: #f09690;
-}
-
-.card__btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ─── Link de cadastro ─────────────────────────────── */
-.card__link {
-  margin-top: auto;
-  padding-top: 36px;
-  color: #FDE8E0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.card__link strong {
-  font-weight: 700;
-}
+.page { min-height: 100vh; display: flex; flex-direction: column; background: var(--color-bg); }
+.page__top { display: flex; justify-content: center; padding: 64px 32px 40px; }
+.page__logo { width: 172px; }
+.page__card { flex: 1; background: #390f09; border-radius: 36px 36px 0 0; padding: 44px 28px 40px; display: flex; flex-direction: column; align-items: center; }
+.card__title { font-size: 2.4rem; color: var(--color-bg); margin-bottom: 30px; }
+.card__error, .card__success { width: 100%; border-radius: 12px; padding: 12px 16px; font-size: .85rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
+.card__error { background: rgba(255,80,80,.15); color: #ffb3b3; }
+.card__success { background: rgba(110,196,110,.18); color: #b9f0c1; }
+.card__form { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+.card__field { width: 100%; background: #fbf5f0; border-radius: 18px; padding: 13px 22px 15px; }
+.field__label { display: block; font-size: .68rem; font-weight: 800; margin-bottom: 3px; }
+.field__input { display: block; width: 100%; background: transparent; border: 0; outline: 0; font-size: 1rem; padding: 0; }
+.card__btn { width: 100%; height: 56px; margin-top: 8px; border-radius: var(--radius-full); background: #f4a49c; color: #390f09; font-weight: 800; }
+.card__btn:disabled { opacity: .6; }
+.card__link { margin-top: auto; padding-top: 36px; color: var(--color-bg); font-size: .9rem; }
+.card__home { margin-top: 14px; color: rgba(255,255,255,.65); font-size: .8rem; }
 </style>
