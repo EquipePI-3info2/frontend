@@ -21,17 +21,24 @@
         <div class="cart-page__items">
           <CartItem
             v-for="item in cartStore.items"
-            :key="item.product.id"
+            :key="`product-${item.product.id}`"
             :item="item"
             @remove="cartStore.removeFromCart(item.product.id)"
             @update-quantity="updateQuantity(item.product.id, $event)"
+          />
+          <KitCartItem
+            v-for="item in cartStore.kitItems"
+            :key="`kit-${item.kit.id}`"
+            :item="item"
+            @remove="cartStore.removeKitFromCart(item.kit.id)"
+            @update-quantity="updateKitQuantity(item.kit.id, $event)"
           />
         </div>
 
         <FeedbackMessage
           v-if="cartStore.hasUnavailableItems"
           type="error"
-          message="Revise os itens indisponíveis antes de continuar. Você pode removê-los ou ajustar a quantidade."
+          message="Revise as quantidades antes de continuar. Produtos e kits usam o mesmo estoque, e a soma pode ultrapassar o disponível."
         />
 
         <CartSummary
@@ -55,6 +62,7 @@ import PageHeader from '@/components/common/PageHeader.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import CartItem from '@/components/cart/CartItem.vue'
+import KitCartItem from '@/components/cart/KitCartItem.vue'
 import CartSummary from '@/components/cart/CartSummary.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -72,6 +80,13 @@ onMounted(async () => {
 
 function updateQuantity(productId, quantity) {
   const result = cartStore.updateQuantity(productId, quantity)
+  if (result.message) {
+    message.value = result.message
+    messageType.value = 'info'
+  }
+}
+function updateKitQuantity(kitId, quantity) {
+  const result = cartStore.updateKitQuantity(kitId, quantity)
   if (result.message) {
     message.value = result.message
     messageType.value = 'info'

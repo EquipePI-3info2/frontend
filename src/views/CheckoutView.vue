@@ -61,9 +61,13 @@
 
         <section class="checkout-section checkout-summary">
           <h2>Resumo do pedido</h2>
-          <div v-for="item in cartStore.items" :key="item.product.id" class="checkout-summary__item">
+          <div v-for="item in cartStore.items" :key="`product-${item.product.id}`" class="checkout-summary__item">
             <span>{{ item.quantity }}× {{ item.product.name }}</span>
             <strong>{{ formatCurrency(Number(item.product.price) * item.quantity) }}</strong>
+          </div>
+          <div v-for="item in cartStore.kitItems" :key="`kit-${item.kit.id}`" class="checkout-summary__item checkout-summary__item--kit">
+            <span>{{ item.quantity }}× {{ item.kit.name }} <small>Kit</small></span>
+            <strong>{{ formatCurrency(Number(item.kit.promotional_price) * item.quantity) }}</strong>
           </div>
           <div class="checkout-summary__row"><span>Subtotal previsto</span><span>{{ formatCurrency(cartStore.totalPrice) }}</span></div>
           <div class="checkout-summary__row"><span>Taxa de entrega</span><span>Calculada pelo backend</span></div>
@@ -146,6 +150,7 @@ async function finishOrder() {
     delivery_notes: deliveryNotes.value,
     payment_method: paymentMethod.value,
     items: cartStore.items.map((item) => ({ product: item.product.id, quantity: item.quantity })),
+    kits: cartStore.kitItems.map((item) => ({ kit: item.kit.id, quantity: item.quantity })),
   }
   try {
     const order = await orderStore.createOrder(payload)
@@ -172,6 +177,7 @@ async function finishOrder() {
 .checkout-summary { background: white; padding: var(--space-5); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .checkout-summary__item, .checkout-summary__row, .checkout-summary__total { display: flex; justify-content: space-between; gap: var(--space-3); font-size: .82rem; }
 .checkout-summary__item span { max-width: 70%; }
+.checkout-summary__item--kit small { color: #9a5d1c; font-size: .62rem; font-weight: 900; text-transform: uppercase; }
 .checkout-summary__row { color: var(--color-text-muted); }
 .checkout-summary__total { padding-top: var(--space-3); border-top: 1px solid var(--color-border); font-size: 1rem; }
 .checkout-page__submit { width: 100%; }

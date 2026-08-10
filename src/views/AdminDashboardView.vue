@@ -14,6 +14,11 @@
             <small>{{ store.stats.activeProducts }} ativos</small>
           </article>
           <article class="stat-card">
+            <Gift :size="22" />
+            <div><strong>{{ store.stats.kits }}</strong><span>Kits</span></div>
+            <small>{{ store.stats.activeKits }} ativos</small>
+          </article>
+          <article class="stat-card">
             <PackageX :size="22" />
             <div><strong>{{ store.stats.outOfStock }}</strong><span>Sem estoque</span></div>
             <small>Produtos indisponíveis</small>
@@ -36,6 +41,7 @@
           </div>
           <div class="quick-actions__grid">
             <RouterLink :to="{ name: 'admin-product-new' }"><PlusCircle :size="20" /><span><strong>Novo produto</strong><small>Cadastrar item no catálogo</small></span></RouterLink>
+            <RouterLink :to="{ name: 'admin-kit-new' }"><Gift :size="20" /><span><strong>Novo kit</strong><small>Montar uma promoção</small></span></RouterLink>
             <RouterLink :to="{ name: 'admin-categories' }"><Tags :size="20" /><span><strong>Categorias</strong><small>Organizar a vitrine</small></span></RouterLink>
             <RouterLink :to="{ name: 'admin-flavors' }"><Cookie :size="20" /><span><strong>Sabores</strong><small>Gerenciar sabores</small></span></RouterLink>
             <RouterLink :to="{ name: 'admin-orders' }"><ClipboardList :size="20" /><span><strong>Pedidos</strong><small>Acompanhar andamento</small></span></RouterLink>
@@ -73,7 +79,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ClipboardList, Clock3, Cookie, Package, PackageX, PlusCircle, Tags, WalletCards } from 'lucide-vue-next'
+import { ClipboardList, Clock3, Cookie, Package, PackageX, Gift, PlusCircle, Tags, WalletCards } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'

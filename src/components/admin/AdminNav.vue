@@ -4,6 +4,7 @@
     <RouterLink :to="{ name: 'admin-products' }"><Package :size="17" />Produtos</RouterLink>
     <RouterLink :to="{ name: 'admin-categories' }"><Tags :size="17" />Categorias</RouterLink>
     <RouterLink :to="{ name: 'admin-flavors' }"><Cookie :size="17" />Sabores</RouterLink>
+    <RouterLink :to="{ name: 'admin-kits' }"><Gift :size="17" />Kits</RouterLink>
     <RouterLink :to="{ name: 'admin-orders' }"><ClipboardList :size="17" />Pedidos</RouterLink>
     <RouterLink :to="{ name: 'admin-payments' }"><WalletCards :size="17" />Pagamentos</RouterLink>
     <RouterLink :to="{ name: 'home' }"><House :size="17" />Loja</RouterLink>
@@ -12,7 +13,7 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
-import { ClipboardList, Cookie, House, LayoutDashboard, Package, Tags, WalletCards } from 'lucide-vue-next'
+import { ClipboardList, Cookie, Gift, House, LayoutDashboard, Package, Tags, WalletCards } from 'lucide-vue-next'
 </script>
 
 <style scoped>

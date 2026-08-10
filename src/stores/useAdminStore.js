@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import productService from '@/services/productService'
+import kitService from '@/services/kitService'
 import orderService from '@/services/orderService'
 import paymentService from '@/services/paymentService'
 import { getApiErrorMessage } from '@/utils/apiError'
@@ -13,15 +14,19 @@ export const useAdminStore = defineStore('admin', () => {
   const products = ref([])
   const categories = ref([])
   const flavors = ref([])
+  const kits = ref([])
   const orders = ref([])
   const payments = ref([])
   const selectedProduct = ref(null)
+  const selectedKit = ref(null)
   const loading = ref(false)
   const saving = ref(false)
   const error = ref('')
 
   const stats = computed(() => ({
     products: products.value.length,
+    kits: kits.value.length,
+    activeKits: kits.value.filter((item) => item.is_active).length,
     activeProducts: products.value.filter((item) => item.is_active).length,
     outOfStock: products.value.filter((item) => Number(item.stock || 0) === 0).length,
     pendingOrders: orders.value.filter((item) => item.status === 'pending').length,
@@ -55,16 +60,18 @@ export const useAdminStore = defineStore('admin', () => {
     loading.value = true
     error.value = ''
     try {
-      const [productsResponse, categoriesResponse, flavorsResponse, ordersResponse, paymentsResponse] = await Promise.all([
+      const [productsResponse, categoriesResponse, flavorsResponse, kitsResponse, ordersResponse, paymentsResponse] = await Promise.all([
         productService.getProducts({ page_size: 100 }),
         productService.getCategories({ page_size: 100 }),
         productService.getFlavors({ page_size: 100 }),
+        kitService.list({ page_size: 100 }),
         orderService.list({ page_size: 100 }),
         paymentService.list({ page_size: 100 }),
       ])
       products.value = listFromResponse(productsResponse.data)
       categories.value = listFromResponse(categoriesResponse.data)
       flavors.value = listFromResponse(flavorsResponse.data)
+      kits.value = listFromResponse(kitsResponse.data)
       orders.value = listFromResponse(ordersResponse.data)
       payments.value = listFromResponse(paymentsResponse.data)
     } catch (err) {
@@ -88,6 +95,49 @@ export const useAdminStore = defineStore('admin', () => {
     } finally {
       loading.value = false
     }
+  }
+
+
+  async function fetchKits() {
+    loading.value = true
+    error.value = ''
+    try {
+      const { data } = await kitService.list({ page_size: 100, ordering: 'name' })
+      kits.value = listFromResponse(data)
+      return kits.value
+    } catch (err) {
+      error.value = getApiErrorMessage(err, 'Não foi possível carregar os kits.')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function fetchKit(slug) {
+    loading.value = true
+    error.value = ''
+    try {
+      const { data } = await kitService.get(slug)
+      selectedKit.value = data
+      return data
+    } catch (err) {
+      error.value = getApiErrorMessage(err, 'Não foi possível carregar o kit.')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function createKit(payload) {
+    return save(() => kitService.create(payload), 'Não foi possível criar o kit.')
+  }
+
+  async function updateKit(slug, payload) {
+    return save(() => kitService.update(slug, payload), 'Não foi possível atualizar o kit.')
+  }
+
+  async function deleteKit(slug) {
+    return save(() => kitService.delete(slug), 'Não foi possível excluir o kit.')
   }
 
   async function createProduct(payload) {
@@ -148,9 +198,11 @@ export const useAdminStore = defineStore('admin', () => {
     products,
     categories,
     flavors,
+    kits,
     orders,
     payments,
     selectedProduct,
+    selectedKit,
     loading,
     saving,
     error,
@@ -159,6 +211,11 @@ export const useAdminStore = defineStore('admin', () => {
     fetchCatalog,
     fetchDashboard,
     fetchProduct,
+    fetchKits,
+    fetchKit,
+    createKit,
+    updateKit,
+    deleteKit,
     createProduct,
     updateProduct,
     deleteProduct,
