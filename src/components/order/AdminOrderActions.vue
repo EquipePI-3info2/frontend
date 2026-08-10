@@ -60,9 +60,10 @@ const paymentTransitions = {
 
 const nextOrderStatuses = computed(() => {
   const options = orderTransitions[props.order.status] || []
+  if (props.order.status !== 'ready') return options
   return props.order.delivery_method === 'pickup'
-    ? options.filter((option) => option.value !== 'delivering')
-    : options
+    ? options.filter((option) => option.value === 'delivered')
+    : options.filter((option) => option.value === 'delivering')
 })
 const nextPaymentStatuses = computed(() => paymentTransitions[props.order.payment?.status] || [])
 const canAddTransaction = computed(() => nextPaymentStatuses.value.some((option) => option.value === 'approved'))

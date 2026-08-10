@@ -2,10 +2,7 @@
   <div class="admin-page">
     <PageHeader title="Administração de pedidos" fallback="/perfil" />
     <main class="container admin-page__content">
-      <nav class="admin-tabs">
-        <RouterLink :to="{ name: 'admin-orders' }">Pedidos</RouterLink>
-        <RouterLink :to="{ name: 'admin-payments' }">Pagamentos</RouterLink>
-      </nav>
+      <AdminNav />
 
       <div class="admin-filters">
         <div class="admin-filters__search"><Search :size="18" /><input v-model.trim="search" placeholder="Código, cliente ou e-mail" /></div>
@@ -24,8 +21,8 @@
 </template>
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
 import { Search } from 'lucide-vue-next'
+import AdminNav from '@/components/admin/AdminNav.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import OrderCard from '@/components/order/OrderCard.vue'
@@ -47,9 +44,6 @@ onMounted(() => store.fetchAllOrders().catch(() => {}))
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
 .admin-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
-.admin-tabs { display: grid; grid-template-columns: 1fr 1fr; background: white; padding: 4px; border-radius: var(--radius-full); box-shadow: var(--shadow-sm); }
-.admin-tabs a { text-align: center; padding: 9px; border-radius: var(--radius-full); font-size: .82rem; font-weight: 800; }
-.admin-tabs a.router-link-active { background: var(--color-primary); color: white; }
 .admin-filters { display: grid; grid-template-columns: 1fr 145px; gap: var(--space-2); }
 .admin-filters__search { min-height: 46px; display: grid; grid-template-columns: 26px 1fr; align-items: center; background: white; padding: 0 var(--space-3); border-radius: var(--radius-md); }
 .admin-filters input { min-width: 0; border: 0; outline: 0; background: transparent; }
