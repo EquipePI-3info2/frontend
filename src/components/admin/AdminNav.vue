@@ -6,16 +6,20 @@
     <RouterLink :to="{ name: 'admin-flavors' }"><Cookie :size="17" />Sabores</RouterLink>
     <RouterLink :to="{ name: 'admin-orders' }"><ClipboardList :size="17" />Pedidos</RouterLink>
     <RouterLink :to="{ name: 'admin-payments' }"><WalletCards :size="17" />Pagamentos</RouterLink>
+    <RouterLink :to="{ name: 'home' }"><House :size="17" />Loja</RouterLink>
   </nav>
 </template>
 
 <script setup>
 import { RouterLink } from 'vue-router'
-import { ClipboardList, Cookie, LayoutDashboard, Package, Tags, WalletCards } from 'lucide-vue-next'
+import { ClipboardList, Cookie, House, LayoutDashboard, Package, Tags, WalletCards } from 'lucide-vue-next'
 </script>
 
 <style scoped>
 .admin-nav {
+  position: sticky;
+  top: 80px;
+  z-index: 80;
   display: flex;
   gap: var(--space-2);
   overflow-x: auto;

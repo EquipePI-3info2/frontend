@@ -48,6 +48,7 @@
         </article>
       </section>
     </main>
+    <BottomNav />
   </div>
 </template>
 
@@ -56,6 +57,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Pencil, Plus, Search, Trash2 } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import { resolveFallbackProductImage, resolveProductImage } from '@/stores/useProductStore'
@@ -107,7 +109,7 @@ onMounted(() => store.fetchCatalog().catch(() => {}))
 
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
-.admin-page__content { max-width: 960px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
+.admin-page__content { max-width: 960px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .admin-toolbar { display: grid; grid-template-columns: 1fr auto; gap: var(--space-2); }
 .admin-search { min-height: 46px; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); background: white; border-radius: var(--radius-md); }
 .admin-search input { width: 100%; border: 0; outline: 0; background: transparent; }

@@ -32,6 +32,7 @@
         </article>
       </section>
     </main>
+    <BottomNav />
   </div>
 </template>
 
@@ -39,6 +40,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { Pencil, Trash2 } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
@@ -101,7 +103,7 @@ onMounted(() => store.fetchCatalog().catch(() => {}))
 
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
-.admin-page__content { max-width: 760px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
+.admin-page__content { max-width: 760px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .admin-state { padding: var(--space-12); text-align: center; color: var(--color-text-muted); }
 .form-card, .item-card { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .form-card { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }

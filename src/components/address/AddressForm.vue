@@ -8,7 +8,22 @@
       <button v-if="showCancel" type="button" aria-label="Fechar formulário" @click="$emit('cancel')"><X :size="21" /></button>
     </div>
 
-    <FeedbackMessage :message="localError" />
+    <FeedbackMessage :message="localError || cepMessage" :type="localError ? 'error' : cepMessageType" />
+
+    <label class="field">
+      <span>CEP</span>
+      <input
+        v-model="form.zip_code"
+        required
+        maxlength="9"
+        inputmode="numeric"
+        autocomplete="postal-code"
+        placeholder="00000-000"
+        @input="maskZip"
+        @blur="lookupZip"
+      />
+      <small>Ao informar um CEP válido, rua, bairro, cidade e UF são preenchidos automaticamente.</small>
+    </label>
 
     <label class="field">
       <span>Identificação</span>
@@ -47,11 +62,6 @@
       </label>
     </div>
 
-    <label class="field">
-      <span>CEP</span>
-      <input v-model="form.zip_code" required maxlength="9" inputmode="numeric" autocomplete="postal-code" @input="maskZip" />
-    </label>
-
     <label class="address-form__check">
       <input v-model="form.is_default" type="checkbox" />
       <span>Usar como endereço padrão</span>
@@ -69,6 +79,7 @@ import { reactive, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import AppButton from '@/components/common/AppButton.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
+import cepService from '@/services/cepService'
 import { formatZipCode } from '@/utils/formatters'
 
 const props = defineProps({
@@ -78,6 +89,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['submit', 'cancel'])
 const localError = ref('')
+const cepMessage = ref('')
+const cepMessageType = ref('info')
+const cepLoading = ref(false)
+const lastLookupZip = ref('')
 
 const emptyForm = () => ({
   label: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', zip_code: '', is_default: false,
@@ -86,16 +101,64 @@ const form = reactive(emptyForm())
 
 watch(
   () => props.address,
-  (value) => Object.assign(form, emptyForm(), value || {}),
+  (value) => {
+    Object.assign(form, emptyForm(), value || {})
+    localError.value = ''
+    cepMessage.value = ''
+    lastLookupZip.value = ''
+  },
   { immediate: true },
 )
 
 function normalizeState(event) {
   form.state = event.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 2).toUpperCase()
 }
+
 function maskZip(event) {
   form.zip_code = formatZipCode(event.target.value)
+  const digits = form.zip_code.replace(/\D/g, '')
+  localError.value = ''
+
+  if (digits.length < 8) {
+    cepMessage.value = ''
+    lastLookupZip.value = ''
+    return
+  }
+
+  lookupZip()
 }
+
+async function lookupZip() {
+  const digits = form.zip_code.replace(/\D/g, '')
+  if (digits.length !== 8 || cepLoading.value || digits === lastLookupZip.value) return
+
+  cepLoading.value = true
+  localError.value = ''
+  cepMessage.value = 'Buscando endereço pelo CEP…'
+  cepMessageType.value = 'info'
+
+  try {
+    const data = await cepService.getAddress(digits)
+
+    if (data.logradouro) form.street = data.logradouro
+    if (data.bairro) form.neighborhood = data.bairro
+    if (data.localidade) form.city = data.localidade
+    if (data.uf) form.state = data.uf
+
+    lastLookupZip.value = digits
+    cepMessage.value = 'Endereço encontrado. Confira os dados e informe o número.'
+    cepMessageType.value = 'success'
+  } catch (error) {
+    lastLookupZip.value = ''
+    cepMessage.value = error?.message === 'CEP não encontrado.'
+      ? 'CEP não encontrado. Confira o CEP ou preencha o endereço manualmente.'
+      : 'Não foi possível consultar o CEP agora. Você pode preencher o endereço manualmente.'
+    cepMessageType.value = 'error'
+  } finally {
+    cepLoading.value = false
+  }
+}
+
 function submit() {
   localError.value = ''
   if (!form.street || !form.number || !form.neighborhood || !form.city || form.state.length !== 2) {
@@ -129,6 +192,7 @@ function submit() {
 .field { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; font-weight: 800; }
 .field input { width: 100%; min-height: 46px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md); padding: 0 var(--space-3); background: #fffdfa; outline: none; font-weight: 600; }
 .field input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(244,169,138,.18); }
+.field small { color: var(--color-text-muted); font-size: .68rem; font-weight: 600; line-height: 1.4; }
 .address-form__grid { display: grid; gap: var(--space-3); }
 .address-form__grid--street { grid-template-columns: minmax(0, 1fr) 92px; }
 .address-form__grid--city { grid-template-columns: minmax(0, 1fr) 76px; }

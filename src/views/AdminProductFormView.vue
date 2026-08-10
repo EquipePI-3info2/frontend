@@ -45,6 +45,7 @@
         </div>
       </form>
     </main>
+    <BottomNav />
   </div>
 </template>
 
@@ -53,6 +54,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Camera, ImagePlus } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
@@ -150,7 +152,7 @@ onBeforeUnmount(clearPreview)
 
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
-.admin-page__content { max-width: 760px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
+.admin-page__content { max-width: 760px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .admin-state { padding: var(--space-12); text-align: center; color: var(--color-text-muted); }
 .product-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .form-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }

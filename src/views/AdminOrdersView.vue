@@ -17,12 +17,14 @@
         <OrderCard v-for="order in filteredOrders" :key="order.id" :order="order" :to="{ name: 'admin-order-detail', params: { id: order.id } }" />
       </section>
     </main>
+    <BottomNav />
   </div>
 </template>
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { Search } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import OrderCard from '@/components/order/OrderCard.vue'
@@ -43,7 +45,7 @@ onMounted(() => store.fetchAllOrders().catch(() => {}))
 </script>
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
-.admin-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
+.admin-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .admin-filters { display: grid; grid-template-columns: 1fr 145px; gap: var(--space-2); }
 .admin-filters__search { min-height: 46px; display: grid; grid-template-columns: 26px 1fr; align-items: center; background: white; padding: 0 var(--space-3); border-radius: var(--radius-md); }
 .admin-filters input { min-width: 0; border: 0; outline: 0; background: transparent; }

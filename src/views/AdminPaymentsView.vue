@@ -16,11 +16,13 @@
         <div v-if="!filteredPayments.length" class="payments-page__state">Nenhum pagamento encontrado.</div>
       </section>
     </main>
+    <BottomNav />
   </div>
 </template>
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import AppButton from '@/components/common/AppButton.vue'
@@ -37,7 +39,7 @@ onMounted(() => store.fetchPayments().catch(() => {}))
 </script>
 <style scoped>
 .payments-page { min-height: 100vh; background: #f8f2ed; }
-.payments-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
+.payments-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .payments-filters { display: grid; grid-template-columns: 1fr 130px; gap: var(--space-2); }
 .payments-filters input, .payments-filters select { min-height: 46px; border: 0; border-radius: var(--radius-md); background: white; padding: 0 var(--space-3); outline: 0; }
 .payments-list { display: flex; flex-direction: column; gap: var(--space-3); }

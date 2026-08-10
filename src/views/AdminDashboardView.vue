@@ -66,6 +66,7 @@
         </section>
       </template>
     </main>
+    <BottomNav />
   </div>
 </template>
 
@@ -74,6 +75,7 @@ import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ClipboardList, Clock3, Cookie, Package, PackageX, PlusCircle, Tags, WalletCards } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge.vue'
@@ -87,7 +89,7 @@ onMounted(() => store.fetchDashboard().catch(() => {}))
 
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
-.admin-page__content { max-width: 960px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
+.admin-page__content { max-width: 960px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .admin-state { padding: var(--space-12); text-align: center; color: var(--color-text-muted); }
 .admin-state--card { padding: var(--space-6); background: white; border-radius: var(--radius-lg); }
 .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }

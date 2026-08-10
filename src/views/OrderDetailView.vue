@@ -39,14 +39,20 @@
           <div class="detail-grid"><span>Forma</span><strong>{{ order.delivery_method_display }}</strong><template v-if="order.delivery_method === 'delivery'"><span>Endereço</span><strong>{{ order.delivery_address }}</strong><span>Cidade</span><strong>{{ order.delivery_city }}/{{ order.delivery_state }}</strong><span>CEP</span><strong>{{ order.delivery_zip }}</strong></template><template v-if="order.delivery_notes"><span>Observações</span><strong>{{ order.delivery_notes }}</strong></template></div>
         </section>
 
-        <section v-if="authStore.isAdmin" class="detail-card"><div class="detail-grid"><span>Cliente</span><strong>{{ order.customer_name }}</strong><span>E-mail</span><strong>{{ order.customer_email }}</strong></div></section>
+        <section v-if="authStore.isAdmin" class="detail-card">
+          <h2>Cliente</h2>
+          <div class="detail-grid">
+            <span>Nome</span><strong>{{ order.customer_name || 'Não informado' }}</strong>
+            <span>E-mail</span><strong>{{ order.customer_email || 'Não informado' }}</strong>
+          </div>
+        </section>
 
         <AdminOrderActions v-if="authStore.isAdmin" :order="order" @updated="handleUpdated" />
 
         <AppButton v-if="!authStore.isAdmin && order.status === 'pending'" variant="outline" size="lg" class="order-detail__cancel" :loading="store.saving" @click="cancelOrder">Cancelar pedido</AppButton>
       </template>
     </main>
-    <BottomNav v-if="!route.meta.requiresAdmin" />
+    <BottomNav />
   </div>
 </template>
 
@@ -78,7 +84,7 @@ async function cancelOrder() {
 
 <style scoped>
 .order-detail { min-height: 100vh; }
-.order-detail__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-8); }
+.order-detail__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .order-detail__state { padding: var(--space-12); text-align: center; }
 .detail-card { background: white; border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: var(--space-4); }
 .detail-card--hero { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-3); }

@@ -4,7 +4,7 @@
     <main class="container search-page__content">
       <div class="search-page__bar">
         <Search :size="20" />
-        <input v-model.trim="filters.search" type="search" placeholder="Cookie, brownie, sabor…" aria-label="Buscar produtos" />
+        <input v-model.trim="filters.search" type="text" enterkeyhint="search" placeholder="Cookie, brownie, sabor…" aria-label="Buscar produtos" />
         <button v-if="filters.search" type="button" aria-label="Limpar busca" @click="filters.search = ''"><X :size="18" /></button>
       </div>
 
