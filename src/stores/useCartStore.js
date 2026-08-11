@@ -51,6 +51,16 @@ function availableKitStock(kit) {
   return Number.isFinite(stock) ? Math.max(0, stock) : 0
 }
 
+function productStockMessage(stock) {
+  return stock === 1
+    ? 'Só temos 1 unidade deste produto disponível no momento.'
+    : `Só temos ${stock} unidades deste produto disponíveis no momento.`
+}
+
+function kitStockMessage() {
+  return 'Este kit não está disponível na quantidade selecionada no momento.'
+}
+
 export const useCartStore = defineStore('cart', () => {
   const stored = readStoredCart()
   const items = ref(stored.products)
@@ -143,7 +153,7 @@ export const useCartStore = defineStore('cart', () => {
     const nextQuantity = Math.min(currentQuantity + desired, stock)
 
     if (nextQuantity <= currentQuantity) {
-      return { ok: false, message: `Quantidade máxima disponível: ${stock}.` }
+      return { ok: false, message: productStockMessage(stock) }
     }
 
     if (existing) {
@@ -158,7 +168,7 @@ export const useCartStore = defineStore('cart', () => {
       quantity: nextQuantity,
       limited: currentQuantity + desired > stock,
       message: currentQuantity + desired > stock
-        ? `Quantidade ajustada ao estoque disponível (${stock}).`
+        ? productStockMessage(stock)
         : '',
     }
   }
@@ -175,7 +185,7 @@ export const useCartStore = defineStore('cart', () => {
     const nextQuantity = Math.min(currentQuantity + desired, stock)
 
     if (nextQuantity <= currentQuantity) {
-      return { ok: false, message: `Quantidade máxima de kits disponível: ${stock}.` }
+      return { ok: false, message: kitStockMessage() }
     }
 
     if (existing) {
@@ -190,7 +200,7 @@ export const useCartStore = defineStore('cart', () => {
       quantity: nextQuantity,
       limited: currentQuantity + desired > stock,
       message: currentQuantity + desired > stock
-        ? `Quantidade ajustada ao estoque disponível (${stock}).`
+        ? kitStockMessage()
         : '',
     }
   }
@@ -222,7 +232,7 @@ export const useCartStore = defineStore('cart', () => {
       ok: true,
       quantity: item.quantity,
       limited: desired > stock,
-      message: desired > stock ? `Quantidade máxima disponível: ${stock}.` : '',
+      message: desired > stock ? productStockMessage(stock) : '',
     }
   }
 
@@ -245,7 +255,7 @@ export const useCartStore = defineStore('cart', () => {
       ok: true,
       quantity: item.quantity,
       limited: desired > stock,
-      message: desired > stock ? `Quantidade máxima de kits disponível: ${stock}.` : '',
+      message: desired > stock ? kitStockMessage() : '',
     }
   }
 

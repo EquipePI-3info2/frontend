@@ -38,7 +38,7 @@
         <FeedbackMessage
           v-if="cartStore.hasUnavailableItems"
           type="error"
-          message="Revise as quantidades antes de continuar. Produtos e kits usam o mesmo estoque, e a soma pode ultrapassar o disponível."
+          message="Alguns itens do seu carrinho não estão disponíveis na quantidade selecionada. Ajuste as quantidades para continuar."
         />
 
         <CartSummary
@@ -79,6 +79,13 @@ onMounted(async () => {
 })
 
 function updateQuantity(productId, quantity) {
+  if (Number(quantity) <= 0) {
+    if (window.confirm('Você deseja excluir este item do seu carrinho?')) {
+      cartStore.removeFromCart(productId)
+    }
+    return
+  }
+
   const result = cartStore.updateQuantity(productId, quantity)
   if (result.message) {
     message.value = result.message
@@ -86,6 +93,13 @@ function updateQuantity(productId, quantity) {
   }
 }
 function updateKitQuantity(kitId, quantity) {
+  if (Number(quantity) <= 0) {
+    if (window.confirm('Você deseja excluir este item do seu carrinho?')) {
+      cartStore.removeKitFromCart(kitId)
+    }
+    return
+  }
+
   const result = cartStore.updateKitQuantity(kitId, quantity)
   if (result.message) {
     message.value = result.message

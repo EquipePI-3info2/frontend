@@ -32,6 +32,7 @@
           <div class="image-actions">
             <button type="button" @click="uploadInput?.click()"><ImagePlus :size="18" />Escolher imagem</button>
             <button type="button" @click="cameraInput?.click()"><Camera :size="18" />Tirar foto</button>
+            <button v-if="imageFile" type="button" class="image-actions__remove" @click="removeSelectedImage"><Trash2 :size="18" />Remover imagem</button>
           </div>
           <input ref="uploadInput" class="hidden-input" type="file" accept="image/*" @change="handleImage" />
           <input ref="cameraInput" class="hidden-input" type="file" accept="image/*" capture="environment" @change="handleImage" />
@@ -52,7 +53,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Camera, ImagePlus } from 'lucide-vue-next'
+import { Camera, ImagePlus, Trash2 } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import AppButton from '@/components/common/AppButton.vue'
@@ -104,6 +105,13 @@ function handleImage(event) {
   imageFile.value = file
   previewUrl.value = URL.createObjectURL(file)
   event.target.value = ''
+}
+
+function removeSelectedImage() {
+  clearPreview()
+  imageFile.value = null
+  if (uploadInput.value) uploadInput.value.value = ''
+  if (cameraInput.value) cameraInput.value.value = ''
 }
 
 function buildPayload() {
@@ -169,6 +177,7 @@ onBeforeUnmount(clearPreview)
 .image-preview img { width: 100%; height: 100%; object-fit: cover; }
 .image-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .image-actions button { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 var(--space-4); border: 1px solid var(--color-primary); border-radius: var(--radius-full); font-size: .78rem; font-weight: 900; }
+.image-actions .image-actions__remove { border-color: #a33c3c; color: #a33c3c; }
 .hidden-input { display: none; }
 .image-card small { color: var(--color-text-muted); font-size: .68rem; }
 .form-actions { display: flex; align-items: center; gap: var(--space-3); }
