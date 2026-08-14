@@ -43,7 +43,7 @@ const imageFailed = ref(false)
 const available = computed(() => props.kit.is_active !== false && props.kit.is_in_stock && Number(props.kit.available_stock) > 0)
 const contents = computed(() =>
   (props.kit.items || [])
-    .map((item) => `${item.quantity}× ${item.product?.name || 'produto'}`)
+    .map((item) => `${item.quantity} ${item.product?.name || 'produto'}`)
     .join(' + '),
 )
 
