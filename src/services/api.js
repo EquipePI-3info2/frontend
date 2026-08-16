@@ -6,7 +6,6 @@ const baseURL = String(import.meta.env.VITE_API_URL || fallbackBaseURL).replace(
 const api = axios.create({
   baseURL,
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
 })
 
 api.interceptors.request.use((config) => {

@@ -25,6 +25,7 @@
 
         <section v-if="authStore.isAdmin" class="profile__admin">
           <p>Administração</p>
+          <RouterLink :to="{ name: 'admin-dashboard' }"><LayoutDashboard :size="20" />Painel administrativo<ChevronRight :size="18" /></RouterLink>
           <RouterLink :to="{ name: 'admin-orders' }"><ClipboardList :size="20" />Gerenciar pedidos<ChevronRight :size="18" /></RouterLink>
           <RouterLink :to="{ name: 'admin-payments' }"><WalletCards :size="20" />Gerenciar pagamentos<ChevronRight :size="18" /></RouterLink>
         </section>
@@ -38,7 +39,7 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { ChevronRight, ClipboardList, LogOut, MapPin, Package, UserRoundPen, WalletCards } from 'lucide-vue-next'
+import { ChevronRight, ClipboardList, LayoutDashboard, LogOut, MapPin, Package, UserRoundPen, WalletCards } from 'lucide-vue-next'
 import PageHeader from '@/components/common/PageHeader.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import { useAuthStore } from '@/stores/useAuthStore'

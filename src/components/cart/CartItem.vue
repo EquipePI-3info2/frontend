@@ -15,6 +15,7 @@
       <div class="cart-item__bottom">
         <QuantitySelector
           :model-value="item.quantity"
+          :min="0"
           :max="Math.max(1, Number(item.product.stock || 0))"
           :disabled="unavailable && Number(item.product.stock || 0) === 0"
           @update:model-value="$emit('update-quantity', $event)"

@@ -19,7 +19,7 @@
         <button v-if="authStore.isAuthenticated" class="side-menu__logout" @click="logout">Sair</button>
       </aside>
     </Transition>
-    <main class="pb-nav"><HeroBanner /><CategoryFilter /><ProductGrid /></main>
+    <main class="pb-nav"><HeroBanner /><KitSection /><CategoryFilter /><ProductGrid /></main>
     <BottomNav />
   </div>
 </template>
@@ -30,16 +30,18 @@ import { X } from 'lucide-vue-next'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import HeroBanner from '@/components/home/HeroBanner.vue'
+import KitSection from '@/components/home/KitSection.vue'
 import CategoryFilter from '@/components/home/CategoryFilter.vue'
 import ProductGrid from '@/components/home/ProductGrid.vue'
 import { useProductStore } from '@/stores/useProductStore'
+import { useKitStore } from '@/stores/useKitStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import logoUrl from '@/assets/images/logo.png'
-const menuOpen = ref(false); const store = useProductStore(); const authStore = useAuthStore()
+const menuOpen = ref(false); const store = useProductStore(); const kitStore = useKitStore(); const authStore = useAuthStore()
 const firstName = computed(() => authStore.user?.name?.split(' ')[0] || '')
 function onKeydown(event) { if (event.key === 'Escape') menuOpen.value = false }
 function logout() { authStore.logout(); menuOpen.value = false }
-onMounted(async () => { window.addEventListener('keydown', onKeydown); await Promise.allSettled([store.fetchCategories(), store.fetchProducts('')]) })
+onMounted(async () => { window.addEventListener('keydown', onKeydown); await Promise.allSettled([store.fetchCategories(), store.fetchProducts(''), kitStore.fetchKits()]) })
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 <style scoped>

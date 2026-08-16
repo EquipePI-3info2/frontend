@@ -2,7 +2,7 @@
   <div class="payments-page">
     <PageHeader title="Administração de pagamentos" fallback="/perfil" />
     <main class="container payments-page__content">
-      <nav class="admin-tabs"><RouterLink :to="{ name: 'admin-orders' }">Pedidos</RouterLink><RouterLink :to="{ name: 'admin-payments' }">Pagamentos</RouterLink></nav>
+      <AdminNav />
       <div class="payments-filters"><input v-model.trim="search" placeholder="Código ou transação" /><select v-model="status"><option value="">Todos</option><option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></div>
       <FeedbackMessage :message="message || store.error" :type="message ? messageType : 'error'" />
       <div v-if="store.loading" class="payments-page__state">Carregando pagamentos…</div>
@@ -16,11 +16,13 @@
         <div v-if="!filteredPayments.length" class="payments-page__state">Nenhum pagamento encontrado.</div>
       </section>
     </main>
+    <BottomNav />
   </div>
 </template>
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import AdminNav from '@/components/admin/AdminNav.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import AppButton from '@/components/common/AppButton.vue'
@@ -37,10 +39,7 @@ onMounted(() => store.fetchPayments().catch(() => {}))
 </script>
 <style scoped>
 .payments-page { min-height: 100vh; background: #f8f2ed; }
-.payments-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-10); }
-.admin-tabs { display: grid; grid-template-columns: 1fr 1fr; background: white; padding: 4px; border-radius: var(--radius-full); box-shadow: var(--shadow-sm); }
-.admin-tabs a { text-align: center; padding: 9px; border-radius: var(--radius-full); font-size: .82rem; font-weight: 800; }
-.admin-tabs a.router-link-active { background: var(--color-primary); color: white; }
+.payments-page__content { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
 .payments-filters { display: grid; grid-template-columns: 1fr 130px; gap: var(--space-2); }
 .payments-filters input, .payments-filters select { min-height: 46px; border: 0; border-radius: var(--radius-md); background: white; padding: 0 var(--space-3); outline: 0; }
 .payments-list { display: flex; flex-direction: column; gap: var(--space-3); }
