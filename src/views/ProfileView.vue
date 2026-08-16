@@ -1,209 +1,76 @@
 <template>
-  <div class="profile">
-    <div class="profile__container">
-
-      <!-- Loading enquanto o perfil está sendo buscado -->
-      <div v-if="authStore.loading" class="profile__loading">
-        Carregando…
-      </div>
-
-      <template v-else-if="authStore.user">
-        <div class="profile__avatar">
-          <img v-if="authStore.user?.profile_photo_url" :src="authStore.user.profile_photo_url" alt="Foto de perfil"
-            class="profile__avatar-image">
-
-          <span v-else>
-            {{ initials }}
-          </span>
-        </div>
-
-        <h1 class="profile__name">{{ authStore.user.name }}</h1>
-        <p class="profile__email">{{ authStore.user.email }}</p>
-
-        <div v-if="authStore.isAdmin" class="profile__badge">
-          Administrador
-        </div>
-
-        <div class="profile__info">
-          <div class="profile__info-item">
-            <span class="profile__info-label">Membro desde</span>
-            <span class="profile__info-value">{{ memberSince }}</span>
+  <div class="profile pb-nav">
+    <PageHeader title="Meu perfil" fallback="/" />
+    <main class="container profile__container">
+      <div v-if="!authStore.user" class="profile__loading">Carregando perfil…</div>
+      <template v-else>
+        <section class="profile__identity">
+          <div class="profile__avatar">
+            <img v-if="authStore.user.profile_photo_url" :src="authStore.user.profile_photo_url" alt="Foto de perfil" />
+            <span v-else>{{ initials }}</span>
           </div>
-        </div>
-        <div>
-          <button @click="router.push({ name: 'EditProfile' })">Editar perfil</button>
-        </div>
+          <div><h1>{{ authStore.user.name }}</h1><p>{{ authStore.user.email }}</p><span v-if="authStore.isAdmin" class="profile__badge">Administrador</span></div>
+        </section>
 
-        <button class="profile__logout" @click="handleLogout">
-          Sair da conta
-        </button>
+        <section class="profile__info-card">
+          <div><span>Telefone</span><strong>{{ authStore.user.telefone || 'Não informado' }}</strong></div>
+          <div><span>Membro desde</span><strong>{{ memberSince }}</strong></div>
+        </section>
+
+        <nav class="profile__menu">
+          <RouterLink :to="{ name: 'orders' }"><span class="profile__menu-icon"><Package :size="21" /></span><span><strong>Meus pedidos</strong><small>Acompanhe e consulte suas compras</small></span><ChevronRight :size="19" /></RouterLink>
+          <RouterLink :to="{ name: 'addresses' }"><span class="profile__menu-icon"><MapPin :size="21" /></span><span><strong>Meus endereços</strong><small>Cadastre e escolha o endereço padrão</small></span><ChevronRight :size="19" /></RouterLink>
+          <RouterLink :to="{ name: 'edit-profile' }"><span class="profile__menu-icon"><UserRoundPen :size="21" /></span><span><strong>Editar perfil</strong><small>Nome, telefone e foto</small></span><ChevronRight :size="19" /></RouterLink>
+        </nav>
+
+        <section v-if="authStore.isAdmin" class="profile__admin">
+          <p>Administração</p>
+          <RouterLink :to="{ name: 'admin-dashboard' }"><LayoutDashboard :size="20" />Painel administrativo<ChevronRight :size="18" /></RouterLink>
+          <RouterLink :to="{ name: 'admin-orders' }"><ClipboardList :size="20" />Gerenciar pedidos<ChevronRight :size="18" /></RouterLink>
+          <RouterLink :to="{ name: 'admin-payments' }"><WalletCards :size="20" />Gerenciar pagamentos<ChevronRight :size="18" /></RouterLink>
+        </section>
+
+        <button class="profile__logout" @click="handleLogout"><LogOut :size="19" /> Sair da conta</button>
       </template>
-
-      <!-- Fallback (não deveria aparecer — rota é protegida) -->
-      <div v-else class="profile__fallback">
-        <p>Sessão não encontrada.</p>
-        <RouterLink to="/login" class="profile__link">Fazer login</RouterLink>
-      </div>
-
-    </div>
+    </main>
+    <BottomNav />
   </div>
 </template>
-
 <script setup>
 import { computed } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { ChevronRight, ClipboardList, LayoutDashboard, LogOut, MapPin, Package, UserRoundPen, WalletCards } from 'lucide-vue-next'
+import PageHeader from '@/components/common/PageHeader.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
-
-const authStore = useAuthStore()
-const router = useRouter()
-
-// Iniciais do nome para o avatar
-const initials = computed(() => {
-  const name = authStore.user?.name || ''
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join('')
-})
-
-// Data de cadastro formatada (campo created_at do backend)
-const memberSince = computed(() => {
-  const raw = authStore.user?.created_at
-  if (!raw) return '—'
-  return new Date(raw).toLocaleDateString('pt-BR', {
-    day: '2-digit', month: 'long', year: 'numeric',
-  })
-})
-
-function handleLogout() {
-  authStore.logout()
-  router.push({ name: 'login' })
-}
+import { formatDate } from '@/utils/formatters'
+const authStore = useAuthStore(); const router = useRouter()
+const initials = computed(() => String(authStore.user?.name || '').split(' ').filter(Boolean).slice(0,2).map((word) => word[0]?.toUpperCase()).join(''))
+const memberSince = computed(() => formatDate(authStore.user?.created_at))
+function handleLogout() { authStore.logout(); router.replace({ name: 'login' }) }
 </script>
-
 <style scoped>
-.profile {
-  min-height: 100vh;
-  background: #FDE8E0;
-  display: flex;
-  justify-content: center;
-  padding-bottom: 48px;
-}
-
-.profile__container {
-  width: 100%;
-  max-width: 420px;
-  padding: 48px 32px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.profile__loading {
-  margin-top: 80px;
-  color: #9C7D6E;
-  font-size: 1rem;
-}
-
-.profile__avatar {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  background: #3B1A08;
-  color: white;
-  font-size: 2rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-.profile__avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.profile__name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #3B1A08;
-  margin-bottom: 4px;
-  text-align: center;
-}
-
-.profile__email {
-  font-size: 0.95rem;
-  color: #9C7D6E;
-  margin-bottom: 12px;
-}
-
-.profile__badge {
-  background: #3B1A08;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 4px 14px;
-  margin-bottom: 24px;
-}
-
-.profile__info {
-  width: 100%;
-  background: white;
-  border-radius: 16px;
-  padding: 16px 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
-  margin-bottom: 32px;
-}
-
-.profile__info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.profile__info-label {
-  font-size: 0.875rem;
-  color: #9C7D6E;
-}
-
-.profile__info-value {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #3B1A08;
-}
-
-.profile__logout {
-  width: 100%;
-  height: 52px;
-  border: 2px solid #3B1A08;
-  border-radius: 999px;
-  background: transparent;
-  color: #3B1A08;
-  font-size: 1rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: .2s;
-}
-
-.profile__logout:hover {
-  background: #3B1A08;
-  color: white;
-}
-
-.profile__fallback {
-  margin-top: 80px;
-  text-align: center;
-  color: #9C7D6E;
-}
-
-.profile__link {
-  display: inline-block;
-  margin-top: 12px;
-  color: #3B1A08;
-  font-weight: 700;
-}
+.profile { min-height: 100vh; }
+.profile__container { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-8); }
+.profile__loading { text-align: center; padding: var(--space-12); color: var(--color-text-muted); }
+.profile__identity { display: flex; align-items: center; gap: var(--space-4); background: white; padding: var(--space-5); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); }
+.profile__avatar { width: 76px; height: 76px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.55rem; font-weight: 900; overflow: hidden; flex: none; }
+.profile__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile__identity h1 { font-size: 1.2rem; line-height: 1.2; }
+.profile__identity p { color: var(--color-text-muted); font-size: .82rem; overflow-wrap: anywhere; }
+.profile__badge { display: inline-flex; margin-top: 6px; background: #f3e2d7; border-radius: var(--radius-full); padding: 3px 9px; font-size: .64rem; font-weight: 800; }
+.profile__info-card { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); background: white; padding: var(--space-4); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.profile__info-card div { display: flex; flex-direction: column; gap: 2px; }
+.profile__info-card span { color: var(--color-text-muted); font-size: .7rem; }
+.profile__info-card strong { font-size: .82rem; }
+.profile__menu { display: flex; flex-direction: column; overflow: hidden; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.profile__menu a { display: grid; grid-template-columns: 42px 1fr 22px; align-items: center; gap: var(--space-3); min-height: 72px; padding: 0 var(--space-4); border-bottom: 1px solid var(--color-border); }
+.profile__menu a:last-child { border-bottom: 0; }
+.profile__menu-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: #fff3ed; border-radius: var(--radius-md); color: var(--color-primary); }
+.profile__menu a > span:nth-child(2) { display: flex; flex-direction: column; }
+.profile__menu small { color: var(--color-text-muted); font-size: .7rem; }
+.profile__admin { display: flex; flex-direction: column; gap: var(--space-2); background: #fff7ec; padding: var(--space-4); border: 1px solid #ead6ba; border-radius: var(--radius-lg); }
+.profile__admin > p { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 900; color: #8b5a2d; }
+.profile__admin a { display: grid; grid-template-columns: 28px 1fr 20px; align-items: center; min-height: 44px; font-weight: 800; font-size: .86rem; }
+.profile__logout { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: var(--space-2); border: 2px solid #8f2929; border-radius: var(--radius-full); color: #8f2929; font-weight: 800; }
 </style>

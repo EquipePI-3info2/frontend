@@ -97,3 +97,26 @@ input, select, textarea { font: inherit; color: inherit; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Acessibilidade e estados globais ─────────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid rgba(244, 169, 138, 0.7);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
