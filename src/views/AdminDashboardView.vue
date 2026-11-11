@@ -1,75 +1,84 @@
 <template>
   <div class="admin-page">
     <PageHeader title="Painel administrativo" fallback="/perfil" />
-    <main class="container admin-page__content">
+    <main class="container dashboard">
       <AdminNav />
-      <FeedbackMessage :message="store.error" />
+      <header class="dashboard-heading">
+        <h1>Visão financeira</h1>
+        <label>
+          Período
+          <select v-model="period">
+            <option value="day">Dia</option>
+            <option value="week">Semana</option>
+            <option value="month">Mês</option>
+            <option value="year">Ano</option>
+          </select>
+        </label>
+      </header>
 
-      <div v-if="store.loading" class="admin-state">Carregando painel…</div>
-      <template v-else>
-        <section class="stats-grid" aria-label="Resumo administrativo">
-          <article class="stat-card">
-            <Package :size="22" />
-            <div><strong>{{ store.stats.products }}</strong><span>Produtos</span></div>
-            <small>{{ store.stats.activeProducts }} ativos</small>
-          </article>
-          <article class="stat-card">
-            <Gift :size="22" />
-            <div><strong>{{ store.stats.kits }}</strong><span>Kits</span></div>
-            <small>{{ store.stats.activeKits }} ativos</small>
-          </article>
-          <article class="stat-card">
-            <PackageX :size="22" />
-            <div><strong>{{ store.stats.outOfStock }}</strong><span>Sem estoque</span></div>
-            <small>Produtos indisponíveis</small>
-          </article>
-          <article class="stat-card">
-            <Clock3 :size="22" />
-            <div><strong>{{ store.stats.pendingOrders }}</strong><span>Pedidos pendentes</span></div>
-            <small>Aguardando pagamento</small>
-          </article>
-          <article class="stat-card">
-            <WalletCards :size="22" />
-            <div><strong>{{ store.stats.pendingPayments }}</strong><span>Pagamentos pendentes</span></div>
-            <small>Aguardando análise</small>
-          </article>
-        </section>
+      <p v-if="store.dashboardLoading" class="panel" role="status">Carregando painel…</p>
+      <div v-else-if="store.dashboardError" class="panel">
+        <FeedbackMessage :message="store.dashboardError" />
+        <button class="retry" @click="store.fetchDashboard(period)">Tentar novamente</button>
+      </div>
 
-        <section class="quick-actions">
-          <div class="section-title">
-            <div><p>Atalhos</p><h2>Gerenciamento</h2></div>
+      <template v-else-if="data">
+        <section class="panel revenue" aria-labelledby="revenue-title">
+          <div>
+            <h2 id="revenue-title">Total recebido</h2>
+            <p class="revenue__amount">{{ formatCurrency(data.current_period.revenue) }}</p>
+            <p>{{ periodDates(data.current_period) }}</p>
           </div>
-          <div class="quick-actions__grid">
-            <RouterLink :to="{ name: 'admin-product-new' }"><PlusCircle :size="20" /><span><strong>Novo produto</strong><small>Cadastrar item no catálogo</small></span></RouterLink>
-            <RouterLink :to="{ name: 'admin-kit-new' }"><Gift :size="20" /><span><strong>Novo kit</strong><small>Montar uma promoção</small></span></RouterLink>
-            <RouterLink :to="{ name: 'admin-categories' }"><Tags :size="20" /><span><strong>Categorias</strong><small>Organizar a vitrine</small></span></RouterLink>
-            <RouterLink :to="{ name: 'admin-flavors' }"><Cookie :size="20" /><span><strong>Sabores</strong><small>Gerenciar sabores</small></span></RouterLink>
-            <RouterLink :to="{ name: 'admin-orders' }"><ClipboardList :size="20" /><span><strong>Pedidos</strong><small>Acompanhar andamento</small></span></RouterLink>
+          <div>
+            <h3>Período anterior</h3>
+            <p><strong>{{ formatCurrency(data.previous_period.revenue) }}</strong></p>
+            <p>{{ periodDates(data.previous_period) }}</p>
+            <p>Variação {{ variation }}</p>
           </div>
         </section>
 
-        <section class="recent-orders">
-          <div class="section-title">
-            <div><p>Atividade recente</p><h2>Últimos pedidos</h2></div>
-            <RouterLink :to="{ name: 'admin-orders' }">Ver todos</RouterLink>
+        <dl class="metrics">
+          <div v-for="metric in metrics" :key="metric.label" class="panel">
+            <dt>{{ metric.label }}</dt>
+            <dd>
+              {{ metric.value }}
+              <small v-if="metric.detail">{{ metric.detail }}</small>
+            </dd>
           </div>
-          <div v-if="!store.recentOrders.length" class="admin-state admin-state--card">Nenhum pedido registrado.</div>
-          <RouterLink
-            v-for="order in store.recentOrders"
-            :key="order.id"
-            class="recent-order"
-            :to="{ name: 'admin-order-detail', params: { id: order.id } }"
-          >
-            <div>
-              <strong>{{ order.code }}</strong>
-              <span>{{ order.customer_name || order.customer_email }}</span>
-            </div>
-            <div class="recent-order__right">
-              <OrderStatusBadge :status="order.status" :label="order.status_display" />
-              <small>{{ formatDateTime(order.created_at) }}</small>
-            </div>
-          </RouterLink>
+        </dl>
+
+        <FeedbackMessage
+          v-if="data.missing_cost_orders"
+          type="info"
+          :message="`Lucro e margem indisponíveis. Pedidos sem custo histórico: ${data.missing_cost_orders}.`"
+        />
+        <FeedbackMessage
+          v-if="data.unmatched_payments"
+          type="info"
+          :message="`Pagamentos aprovados sem pedido vinculado: ${data.unmatched_payments}. Esses valores aparecem no total recebido e por forma de pagamento.`"
+        />
+
+        <section class="panel" aria-labelledby="chart-title">
+          <h2 id="chart-title">Faturamento por período</h2>
+          <p class="chart-note">Pagamentos aprovados, por data de pagamento</p>
+          <p v-if="!chartMax" class="chart-note">Nenhum valor recebido no período.</p>
+          <ul v-else class="chart">
+            <li v-for="point in data.series" :key="point.date">
+              <span>{{ chartLabel(point.date) }}</span>
+              <span class="chart__track" aria-hidden="true">
+                <span class="chart__bar" :style="{ width: `${Number(point.revenue) / chartMax * 100}%` }"></span>
+              </span>
+              <strong>{{ formatCurrency(point.revenue) }}</strong>
+            </li>
+          </ul>
         </section>
+
+        <div class="tables">
+          <DashboardTable title="Produtos mais vendidos" note="Inclui as unidades vendidas em kits." name-label="Produto" value-label="Unidades" :rows="data.products" />
+          <DashboardTable title="Receita por produto" note="Vendas avulsas pelo preço registrado no pedido." name-label="Produto" value-label="Valor" :rows="productsByRevenue" currency />
+          <DashboardTable title="Receita por kit" note="Valores registrados nos itens de kit." name-label="Kit" value-label="Valor" :rows="data.kits" currency />
+          <DashboardTable title="Receita por forma de pagamento" name-label="Forma de pagamento" value-label="Valor" :rows="data.payment_methods" currency />
+        </div>
       </template>
     </main>
     <BottomNav />
@@ -77,53 +86,84 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
-import { ClipboardList, Clock3, Cookie, Package, PackageX, Gift, PlusCircle, Tags, WalletCards } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
 import AdminNav from '@/components/admin/AdminNav.vue'
-import BottomNav from '@/components/layout/BottomNav.vue'
+import DashboardTable from '@/components/admin/DashboardTable.vue'
 import FeedbackMessage from '@/components/common/FeedbackMessage.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
-import OrderStatusBadge from '@/components/order/OrderStatusBadge.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 import { useAdminStore } from '@/stores/useAdminStore'
-import { formatDateTime } from '@/utils/formatters'
+import { formatCurrency } from '@/utils/formatters'
 
 const store = useAdminStore()
+const period = ref('week')
+const data = computed(() => store.dashboard)
+const chartMax = computed(() => Math.max(0, ...data.value.series.map((point) => Number(point.revenue))))
+const productsByRevenue = computed(() => data.value.products
+  .filter((product) => product.sold_separately)
+  .sort((first, second) => Number(second.revenue) - Number(first.revenue)))
 
-onMounted(() => store.fetchDashboard().catch(() => {}))
+const percentFormat = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 2 })
+const percent = (value) => value == null ? '—' : percentFormat.format(Number(value) / 100)
+const currency = (value) => value == null ? '—' : formatCurrency(value)
+const variation = computed(() => {
+  const value = data.value.variation_percentage
+  if (value == null) return 'indisponível (base anterior zerada)'
+  return `${Number(value) > 0 ? '+' : ''}${percent(value)}`
+})
+
+const metrics = computed(() => {
+  const value = data.value
+  return [
+    { label: 'Faturamento bruto', value: currency(value.gross_revenue), detail: 'Subtotal de produtos e kits' },
+    { label: 'Faturamento líquido', value: currency(value.net_revenue), detail: 'Vendas após descontos, sem entrega' },
+    { label: 'Descontos', value: currency(value.discounts), detail: `${percent(value.discount_percentage)} do faturamento bruto` },
+    { label: 'Receita com entrega', value: currency(value.delivery_revenue) },
+    { label: 'Lucro bruto', value: currency(value.gross_profit), detail: 'Vendas líquidas menos o custo dos itens' },
+    { label: 'Margem bruta', value: percent(value.gross_margin_percentage) },
+  ]
+})
+
+const fullDate = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })
+const shortDate = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit' })
+const monthDate = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', month: 'short' })
+
+function periodDates(range) {
+  const start = fullDate.format(new Date(range.start))
+  return range.start === range.end ? start : `${start} a ${fullDate.format(new Date(range.end))}`
+}
+
+function chartLabel(date) {
+  return (data.value.period === 'year' ? monthDate : shortDate).format(new Date(date))
+}
+
+watch(period, (value) => store.fetchDashboard(value), { immediate: true })
 </script>
 
 <style scoped>
 .admin-page { min-height: 100vh; background: #f8f2ed; }
-.admin-page__content { max-width: 960px; display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
-.admin-state { padding: var(--space-12); text-align: center; color: var(--color-text-muted); }
-.admin-state--card { padding: var(--space-6); background: white; border-radius: var(--radius-lg); }
-.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.stat-card { min-height: 128px; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-.stat-card > svg { color: var(--color-primary-light); }
-.stat-card div { display: flex; align-items: baseline; gap: 7px; }
-.stat-card strong { font-size: 1.6rem; line-height: 1; }
-.stat-card span { font-size: .78rem; font-weight: 800; }
-.stat-card small { margin-top: auto; color: var(--color-text-muted); font-size: .7rem; }
-.quick-actions, .recent-orders { display: flex; flex-direction: column; gap: var(--space-3); }
-.section-title { display: flex; align-items: end; justify-content: space-between; gap: var(--space-3); }
-.section-title p { color: var(--color-text-muted); font-size: .68rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
-.section-title h2 { font-size: 1rem; }
-.section-title > a { font-size: .78rem; font-weight: 900; }
-.quick-actions__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.quick-actions__grid a { display: flex; align-items: center; gap: var(--space-3); min-height: 84px; padding: var(--space-4); background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-.quick-actions__grid svg { flex: none; color: var(--color-primary-light); }
-.quick-actions__grid span { display: flex; flex-direction: column; min-width: 0; }
-.quick-actions__grid strong { font-size: .82rem; }
-.quick-actions__grid small { color: var(--color-text-muted); font-size: .68rem; }
-.recent-order { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-.recent-order > div:first-child { display: flex; flex-direction: column; min-width: 0; }
-.recent-order > div:first-child strong { font-size: .86rem; }
-.recent-order > div:first-child span { color: var(--color-text-muted); font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.recent-order__right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
-.recent-order__right small { color: var(--color-text-muted); font-size: .64rem; }
-@media (min-width: 720px) {
-  .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .quick-actions__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
+.dashboard { max-width: 1040px; display: grid; gap: var(--space-4); padding-bottom: calc(var(--nav-height) + var(--space-6)); }
+.dashboard-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.dashboard-heading h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
+.dashboard-heading label { display: flex; align-items: center; gap: var(--space-2); font-weight: 800; }
+select { background: white; border: 1px solid #a48273; border-radius: var(--radius-sm); padding: var(--space-2); }
+.panel { background: white; border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); min-width: 0; }
+.panel h2 { font-size: 1.05rem; }
+.revenue { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-4); background: var(--color-primary); color: white; }
+.revenue h3 { font-size: .92rem; }
+.revenue p { font-size: .87rem; }
+.revenue .revenue__amount { font-size: clamp(1.65rem, 6vw, 2.6rem); font-weight: 800; overflow-wrap: anywhere; }
+.metrics, .tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.metrics dt { font-weight: 800; font-size: .84rem; }
+.metrics dd { font-size: clamp(1.08rem, 3vw, 1.5rem); font-weight: 800; overflow-wrap: anywhere; }
+.metrics small { display: block; font-size: .8rem; font-weight: 600; }
+.chart-note { font-size: .8rem; }
+.chart { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
+.chart li { display: grid; grid-template-columns: 3rem minmax(0, 1fr) minmax(5.5rem, max-content); align-items: center; gap: var(--space-2); font-size: .8rem; }
+.chart strong { text-align: right; font-variant-numeric: tabular-nums; }
+.chart__track { display: block; border-radius: var(--radius-full); background: #f8f2ed; }
+.chart__bar { display: block; border-radius: inherit; height: .65rem; background: var(--color-primary-light); }
+.retry { margin-top: var(--space-3); text-decoration: underline; font-weight: 800; }
+@media (min-width: 750px) { .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 599px) { .tables { grid-template-columns: minmax(0, 1fr); } }
 </style>
