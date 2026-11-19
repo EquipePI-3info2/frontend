@@ -62,11 +62,11 @@
           <h2 id="chart-title">Faturamento por período</h2>
           <p class="chart-note">Pagamentos aprovados, por data de pagamento</p>
           <p v-if="!chartMax" class="chart-note">Nenhum valor recebido no período.</p>
-          <ul v-else class="chart">
+          <ul class="chart">
             <li v-for="point in data.series" :key="point.date">
               <span>{{ chartLabel(point.date) }}</span>
               <span class="chart__track" aria-hidden="true">
-                <span class="chart__bar" :style="{ width: `${Number(point.revenue) / chartMax * 100}%` }"></span>
+                <span class="chart__bar" :style="{ width: `${Number(point.revenue) / (chartMax || 1) * 100}%` }"></span>
               </span>
               <strong>{{ formatCurrency(point.revenue) }}</strong>
             </li>

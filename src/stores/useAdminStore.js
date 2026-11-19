@@ -52,7 +52,12 @@ export const useAdminStore = defineStore('admin', () => {
     dashboard.value = null
     try {
       const { data } = await dashboardService.get(period)
-      if (request === dashboardRequest) dashboard.value = data
+      if (request !== dashboardRequest) return
+      if (data?.period !== period || !Array.isArray(data.series)) {
+        dashboardError.value = 'A API em execução não retornou o painel financeiro completo. Confira a versão do backend e reinicie o Django.'
+        return
+      }
+      dashboard.value = data
     } catch (err) {
       if (request === dashboardRequest) {
         dashboardError.value = getApiErrorMessage(err, 'Não foi possível carregar o painel financeiro.')
