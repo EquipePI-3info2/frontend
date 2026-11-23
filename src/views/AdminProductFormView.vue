@@ -13,7 +13,26 @@
           <label><span>Descrição</span><textarea v-model.trim="form.description" rows="4" /></label>
           <div class="form-grid">
             <label><span>Categoria *</span><select v-model="form.category" required><option value="" disabled>Selecione</option><option v-for="item in store.categories" :key="item.id" :value="String(item.id)">{{ item.name }}</option></select></label>
-            <label><span>Sabor</span><select v-model="form.flavor"><option value="">Sem sabor</option><option v-for="item in store.flavors" :key="item.id" :value="String(item.id)">{{ item.name }}</option></select></label>
+            <div class="flavor-field">
+              <span id="product-flavor-label">Sabor</span>
+              <details ref="flavorPicker" class="flavor-picker">
+                <summary aria-labelledby="product-flavor-label product-flavor-value">
+                  <span id="product-flavor-value">{{ selectedFlavorName }}</span>
+                  <ChevronDown :size="16" aria-hidden="true" />
+                </summary>
+                <fieldset aria-labelledby="product-flavor-label">
+                  <label>
+                    <input v-model="form.flavor" type="radio" name="product-flavor" value="" />
+                    Sem sabor
+                  </label>
+                  <label v-for="item in store.flavors" :key="item.id">
+                    <input v-model="form.flavor" type="radio" name="product-flavor" :value="String(item.id)" />
+                    {{ item.name }}
+                  </label>
+                  <button type="button" @click="closeFlavorPicker">Concluir seleção</button>
+                </fieldset>
+              </details>
+            </div>
           </div>
           <div class="form-grid">
             <label><span>Preço de venda *</span><input v-model="form.price" type="number" min="0.01" step="0.01" required /></label>
@@ -53,7 +72,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Camera, ImagePlus, Trash2 } from 'lucide-vue-next'
+import { Camera, ChevronDown, ImagePlus, Trash2 } from 'lucide-vue-next'
 import AdminNav from '@/components/admin/AdminNav.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import AppButton from '@/components/common/AppButton.vue'
@@ -66,6 +85,7 @@ const router = useRouter()
 const store = useAdminStore()
 const uploadInput = ref(null)
 const cameraInput = ref(null)
+const flavorPicker = ref(null)
 const imageFile = ref(null)
 const previewUrl = ref('')
 const currentImage = ref('')
@@ -80,11 +100,21 @@ const form = reactive({
   is_active: true, is_featured: false,
 })
 
+const selectedFlavorName = computed(() =>
+  store.flavors.find((item) => String(item.id) === form.flavor)?.name ?? 'Sem sabor',
+)
+
+function closeFlavorPicker() {
+  const picker = flavorPicker.value
+  picker.open = false
+  picker.querySelector('summary').focus()
+}
+
 function fillForm(product) {
   form.name = product.name || ''
   form.description = product.description || ''
   form.category = String(product.category?.id ?? product.category ?? '')
-  form.flavor = String(product.flavor?.id ?? '')
+  form.flavor = String(product.flavor?.id ?? product.flavor ?? '')
   form.price = product.price ?? ''
   form.cost_price = product.cost_price ?? ''
   form.stock = product.stock ?? 0
@@ -166,9 +196,17 @@ onBeforeUnmount(clearPreview)
 .form-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .form-card h2 { font-size: 1rem; }
 .form-card label { display: flex; flex-direction: column; gap: 5px; font-size: .76rem; font-weight: 900; }
-.form-card input:not([type='checkbox']), .form-card select, .form-card textarea { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: white; outline: 0; resize: vertical; }
+.form-card input:not([type='checkbox'], [type='radio']), .form-card select, .form-card textarea { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: white; outline: 0; resize: vertical; }
 .form-card textarea { min-height: 100px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.flavor-field { display: grid; align-content: start; gap: 5px; min-width: 0; font-size: .76rem; font-weight: 900; }
+.flavor-picker { border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.flavor-picker summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 10px 12px; cursor: pointer; list-style: none; }
+.flavor-picker summary::-webkit-details-marker { display: none; }
+.flavor-picker fieldset { display: grid; border: 0; padding: 0 12px 10px; min-width: 0; }
+.flavor-picker fieldset label { display: flex; flex-direction: row; align-items: center; gap: 8px; min-height: 40px; cursor: pointer; }
+.flavor-picker fieldset input[type="radio"] { width: 16px; min-height: auto; margin: 0; accent-color: var(--color-primary); flex: none; }
+.flavor-picker button { min-height: 40px; text-decoration: underline; text-align: left; }
 .switches { display: flex; flex-wrap: wrap; gap: var(--space-4); }
 .switches label { flex-direction: row; align-items: center; font-size: .8rem; }
 .switches input { width: 18px; height: 18px; accent-color: var(--color-primary); }

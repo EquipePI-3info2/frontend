@@ -3,19 +3,26 @@ import { defineStore } from 'pinia'
 import productService from '@/services/productService'
 import { getApiErrorMessage } from '@/utils/apiError'
 
-import cookieUrl from '@/assets/images/cookie.png'
-import brownieUrl from '@/assets/images/brownie.png'
+const noImageArtwork = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 440">
+    <rect width="640" height="440" fill="#f7eee8"/>
+    <g fill="none" stroke="#826052" stroke-width="4" stroke-linejoin="round">
+      <rect x="278" y="150" width="84" height="73" rx="10"/>
+      <circle cx="300" cy="169" r="6"/>
+      <path d="m283 211 24-20 13 10 19-17 18 18"/>
+    </g>
+    <text x="320" y="265" text-anchor="middle" font-family="sans-serif"
+      font-size="25" fill="#69483c">Sem imagem</text>
+  </svg>
+`
+const noImageUrl = `data:image/svg+xml,${encodeURIComponent(noImageArtwork)}`
 
 export function resolveProductImage(product) {
-  if (product?.image_url) return product.image_url
-  if (product?.image) return product.image
-  const slug = product?.category?.slug || product?.category_slug || ''
-  return slug === 'brownies' ? brownieUrl : cookieUrl
+  return product?.image_url || product?.image || resolveFallbackProductImage()
 }
 
-export function resolveFallbackProductImage(product) {
-  const slug = product?.category?.slug || product?.category_slug || ''
-  return slug === 'brownies' ? brownieUrl : cookieUrl
+export function resolveFallbackProductImage() {
+  return noImageUrl
 }
 
 function listFromResponse(data) {
