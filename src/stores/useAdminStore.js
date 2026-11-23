@@ -1,9 +1,8 @@
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import productService from '@/services/productService'
 import kitService from '@/services/kitService'
-import orderService from '@/services/orderService'
-import paymentService from '@/services/paymentService'
+import dashboardService from '@/services/dashboardService'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 function listFromResponse(data) {
@@ -15,25 +14,15 @@ export const useAdminStore = defineStore('admin', () => {
   const categories = ref([])
   const flavors = ref([])
   const kits = ref([])
-  const orders = ref([])
-  const payments = ref([])
+  const dashboard = ref(null)
+  const dashboardLoading = ref(false)
+  const dashboardError = ref('')
+  let dashboardRequest = 0
   const selectedProduct = ref(null)
   const selectedKit = ref(null)
   const loading = ref(false)
   const saving = ref(false)
   const error = ref('')
-
-  const stats = computed(() => ({
-    products: products.value.length,
-    kits: kits.value.length,
-    activeKits: kits.value.filter((item) => item.is_active).length,
-    activeProducts: products.value.filter((item) => item.is_active).length,
-    outOfStock: products.value.filter((item) => Number(item.stock || 0) === 0).length,
-    pendingOrders: orders.value.filter((item) => item.status === 'pending').length,
-    pendingPayments: payments.value.filter((item) => item.status === 'pending').length,
-  }))
-
-  const recentOrders = computed(() => orders.value.slice(0, 5))
 
   async function fetchCatalog() {
     loading.value = true
@@ -56,29 +45,25 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  async function fetchDashboard() {
-    loading.value = true
-    error.value = ''
+  async function fetchDashboard(period) {
+    const request = ++dashboardRequest
+    dashboardLoading.value = true
+    dashboardError.value = ''
+    dashboard.value = null
     try {
-      const [productsResponse, categoriesResponse, flavorsResponse, kitsResponse, ordersResponse, paymentsResponse] = await Promise.all([
-        productService.getProducts({ page_size: 100 }),
-        productService.getCategories({ page_size: 100 }),
-        productService.getFlavors({ page_size: 100 }),
-        kitService.list({ page_size: 100 }),
-        orderService.list({ page_size: 100 }),
-        paymentService.list({ page_size: 100 }),
-      ])
-      products.value = listFromResponse(productsResponse.data)
-      categories.value = listFromResponse(categoriesResponse.data)
-      flavors.value = listFromResponse(flavorsResponse.data)
-      kits.value = listFromResponse(kitsResponse.data)
-      orders.value = listFromResponse(ordersResponse.data)
-      payments.value = listFromResponse(paymentsResponse.data)
+      const { data } = await dashboardService.get(period)
+      if (request !== dashboardRequest) return
+      if (data?.period !== period || !Array.isArray(data.series)) {
+        dashboardError.value = 'A API em execução não retornou o painel financeiro completo. Confira a versão do backend e reinicie o Django.'
+        return
+      }
+      dashboard.value = data
     } catch (err) {
-      error.value = getApiErrorMessage(err, 'Não foi possível carregar o painel administrativo.')
-      throw err
+      if (request === dashboardRequest) {
+        dashboardError.value = getApiErrorMessage(err, 'Não foi possível carregar o painel financeiro.')
+      }
     } finally {
-      loading.value = false
+      if (request === dashboardRequest) dashboardLoading.value = false
     }
   }
 
@@ -199,15 +184,14 @@ export const useAdminStore = defineStore('admin', () => {
     categories,
     flavors,
     kits,
-    orders,
-    payments,
+    dashboard,
+    dashboardLoading,
+    dashboardError,
     selectedProduct,
     selectedKit,
     loading,
     saving,
     error,
-    stats,
-    recentOrders,
     fetchCatalog,
     fetchDashboard,
     fetchProduct,
